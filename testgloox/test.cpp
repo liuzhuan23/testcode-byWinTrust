@@ -359,7 +359,7 @@ class FTTest : public SIProfileFTHandler, BytestreamDataHandler
 
         virtual void handleBytestreamData( Bytestream* /*bs*/, const std::string& data )
         {
-            printf( "received %d bytes of data:\n%s\n", data.length(), data.c_str() );
+            printf( "received %d bytes of data:\n%s\n", (int)data.length(), data.c_str() );
         }
 
         virtual void handleBytestreamError( Bytestream* /*bs*/, const IQ& /*iq*/ )
