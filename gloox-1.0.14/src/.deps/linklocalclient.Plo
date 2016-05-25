@@ -1,0 +1,8 @@
+linklocalclient.lo: linklocalclient.cpp linklocalclient.h config.h \
+ ../config.h.unix
+
+linklocalclient.h:
+
+config.h:
+
+../config.h.unix:

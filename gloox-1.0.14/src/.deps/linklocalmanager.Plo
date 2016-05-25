@@ -1,0 +1,8 @@
+linklocalmanager.lo: linklocalmanager.cpp linklocalmanager.h config.h \
+ ../config.h.unix
+
+linklocalmanager.h:
+
+config.h:
+
+../config.h.unix:

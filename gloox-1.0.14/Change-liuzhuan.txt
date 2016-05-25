@@ -1,0 +1,37 @@
+*** Change-liuzhuan.txt
+    记录我的修改内容
+
+*** changelog
+    ****** 2016-04-15
+    （1）void ClientBase::notifyMessageHandlers( Message& msg )
+         {
+            if( m_mucInvitationHandler )
+            {
+                const MUCRoom::MUCUser* mu = msg.findExtension<MUCRoom::MUCUser>( ExtMUCUser );
+                if( mu && mu->operation() != MUCRoom::OpInviteFrom )
+                {
+                    m_mucInvitationHandler->handleMUCInvitation( msg.from(),
+                    mu->jid() ? JID( *(mu->jid()) ) : JID(),
+                    mu->reason() ? *(mu->reason()) : EmptyString,
+                    msg.body(),
+                    mu->password() ? *(mu->password()) : EmptyString,
+                    mu->continued(),
+                    mu->thread() ? *(mu->thread()) : EmptyString );
+                    return;
+                }
+            }
+        }
+    （2）notifyMessageHandlers函数作用是用来判断会议室邀请通知的，注意1666行，mu->operation() 实现了返回当前消息头是否为
+         XMPP的invite，也就是邀请，当一个邀请消息经过IO（client类）时候，在这里的状态就是invite，这一点，我通过gdb已经证实了，
+         但是，由于!=的操作符错误，这个判断永远会不成立，这种代码，在gloox中，并没有提供测试例子，也许官方都没有测试过，只能是gdb去跟踪流程，
+         所以，很多实现，还是需要自己去gdb摸索他的功能
+
+    ****** 2016-04-15
+    （1）修改了Gloox根下的Makefile，还有src/Makefile，将其的CFLAGS中，-g O2，修改为-g O0，目的是取消编译器优化，方便gdb调试变量
+    
+    ****** 2016-04-15
+    （1）主要的两处gdb断点，跟踪后，可以查看bt来观察gloox的调用堆栈顺序
+        （1.1）断点1：gloox::MUCRoom::MUCUser::MUCUser
+        （1.2）断点2：gloox::ClientBase::notifyMessageHandlers
+    
+    
