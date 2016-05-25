@@ -1,0 +1,95 @@
+OpenFire 我们可以进行什么样的二次开发？
+===================================================================================
+
+答案就是插件，openfire的plugins机制
+--------------------------------
+   Plugins extend and enhance the functionality of Openfire (formerly Wildfire). 
+   
+   Below is a list of both open source plugins available for Openfire. To install plugins, 
+   
+   copy the .jar file into the plugins directory of your Openfire installation. 
+   
+   Beta plugins are also available. 
+   
+   更多插件来源参考URL：
+   http://www.igniterealtime.org/projects/openfire/plugins.jsp
+   
+通过一个例子，我们看看插件的使用
+--------------------------------
+   UserService插件，功能是通过json调用，生成用户，删除用户等用户管理方法
+   
+   - 插件安装调用方法::
+   
+      Copy userservice.jar into the plugins directory of your Openfire server. 
+      The plugin will then be automatically deployed. To upgrade to a new version, 
+      copy the new userservice.jar file over the existing file.
+      
+      下载userservice.jar，然后放置进去openfire/plugins目录即可
+      
+   - 使用时候，注意特别问题如下::
+   
+      注意他的sevlet的设置init代码
+      public void init(ServletConfig servletConfig) throws ServletException 
+      {
+         super.init(servletConfig);
+         plugin = (UserServicePlugin) XMPPServer.getInstance().getPluginManager().getPlugin("userservice");
+ 
+         // Exclude this servlet from requiring the user to login
+         AuthCheckFilter.addExclude("userService/userservice");
+      }
+      这里引用的方法是"userService/userservice", 在插件jar包解压缩后，会自动形成目录，比如：userservice.jar，解开压缩后就是
+      userservice，调用时候，会误以为这个就是方法，比如：http://192.168.199.225:9090/plugins/userservice/userservce?
+      这里就不对了，和serlet中声明出去的方法不同，他是"userService/userservice"，所以，这里在使用插件的时候要特别注意，
+      看他的init是啥，再去调用，一定要先去看看插件的sevlet的设置init方法中，声明出去的Exclude方法，在决定调用接口名字！
+      
+      安装后，需要在"服务器设置"-->"特性设置"中，启用插件，插件默认是Disable的，需要Enable
+      
+   - PHP可以使用curl方法和fopen方法进行该RPC的调用，全部为Get请求，服务器使用apache2，CGI采用PHP，客户端使用curl::
+   
+      Apache2和PHP，以及curl的安装方法不在本文的阐述之内，请另行参考
+      
+   - Apache2服务器下的userservice调用脚本，该脚本提供一些方法，作为中间层为http客户提供RPC，使其可以访问userservice插件
+   
+     .. literalinclude:: ./OpenFireUserService.php
+      
+   - HTTP客户端的CURL代码实现，该实现，功能做到了访问中间层的PHP脚本，来间接调用userservice插件
+   
+     .. literalinclude:: ./testplugin.php
+     
+   - 另外提供一个服务器端PHP脚本的问题，这个是在测试时候发现的，已经修改了，不过可以作为一个常用方法来参考，明眼人一看就明白怎么回事::
+   
+      userservice该插件，不再接受add用户时候的post请求，全部更改为get，参考他的代码如下（package org.jivesoftware.openfire.plugin.userService）：
+      @Override protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException 
+      {
+        doGet(request, response);
+      }
+      doPost没了，直接用的doGet，所以，在php中的curl进行post表单时候，遇到了问题，后经过抓包发现只能get，抓包内容如下：
+      0040  b3 a2 47 45 54 20 2f 70  6c 75 67 69 6e 73 2f 75   ..GET /p lugins/u
+      0050  73 65 72 53 65 72 76 69  63 65 2f 75 73 65 72 73   serServi ce/users
+      0060  65 72 76 69 63 65 3f 74  79 70 65 3d 61 64 64 26   ervice?t ype=add&
+      0070  73 65 63 72 65 74 3d 39  4d 35 35 4a 47 77 4e 26   secret=9 M55JGwN&
+      0080  75 73 65 72 6e 61 6d 65  3d 6c 69 75 7a 68 75 61   username =liuzhua
+      0090  6e 74 65 73 74 26 70 61  73 73 77 6f 72 64 3d 31   ntest&pa ssword=1
+      00a0  32 33 34 35 36 26 6e 61  6d 65 3d 25 45 35 25 38   23456&na me=%E5%8
+      00b0  38 25 39 38 25 45 39 25  39 32 25 42 42 26 65 6d   8%98%E9% 92%BB&em
+      00c0  61 69 6c 3d 65 6d 61 69  6c 25 34 30 65 6d 61 69   ail=emai l%40emai
+      00d0  6c 2e 74 6c 64 2e 63 6e  20 48 54 54 50 2f 31 2e   l.tld.cn  HTTP/1.
+      00e0  31 0d 0a 48 6f 73 74 3a  20 31 39 32 2e 31 36 38   1..Host:  192.168
+      00f0  2e 31 39 39 2e 32 32 35  3a 39 30 39 30 0d 0a 55   .199.225 :9090..U
+      0100  73 65 72 2d 41 67 65 6e  74 3a 20 4d 6f 7a 69 6c   ser-Agen t: Mozil
+      0110  6c 61 2f 35 2e 30 20 28  58 31 31 3b 20 55 62 75   la/5.0 ( X11; Ubu
+      0120  6e 74 75 3b 20 4c 69 6e  75 78 20 69 36 38 36 3b   ntu; Lin ux i686;
+      0130  20 72 76 3a 33 33 2e 30  29 20 47 65 63 6b 6f 2f    rv:33.0 ) Gecko/
+      0140  32 30 31 30 30 31 30 31  20 46 69 72 65 66 6f 78   20100101  Firefox
+      0150  2f 33 33 2e 30 0d 0a 41  63 63 65 70 74 3a 20 74   /33.0..A ccept: t
+      0160  65 78 74 2f 68 74 6d 6c  2c 61 70 70 6c 69 63 61   ext/html ,applica
+      0170  74 69 6f 6e 2f 78 68 74  6d 6c 2b 78 6d 6c 2c 61   tion/xht ml+xml,a
+      0180  70 70 6c 69 63 61 74 69  6f 6e 2f 78 6d 6c 3b 71   pplicati on/xml;q
+      
+      php中进行的curl全部调试为get请求，结果就正确了！
+
+      设置url时候，如果在浏览器中，直接输入数据进行调用，也就是uservice?方法，需要把数据进行urlencode，在php中，设置get参数
+      可以直接使用http_build_query函数，来避免编码问题，否则，未经过编码的数据，直接调用接口，也会出错
+   
+   
+     

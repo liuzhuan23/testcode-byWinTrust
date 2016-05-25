@@ -1,0 +1,154 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>WinTrustIM软件构成以及需要达到的目的 &mdash; WinTrustIM-Doc 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="WinTrustIM-Doc 0.1 documentation" href="index.html" />
+    <link rel="next" title="WinTrustIM软件XMPP协议栈开发环境调试" href="kaifahuanjin.html" />
+    <link rel="prev" title="Welcome to WinTrustIM-Doc’s documentation!" href="index.html" /> 
+  </head>
+  <body role="document">
+      <div class="header" role="banner"><h1 class="heading"><a href="index.html">
+          <span>WinTrustIM-Doc 0.1 documentation</span></a></h1>
+        <h2 class="heading"><span>WinTrustIM软件构成以及需要达到的目的</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="index.html">Welcome to WinTrustIM-Doc&#8217;s documentation!</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="kaifahuanjin.html">WinTrustIM软件XMPP协议栈开发环境调试</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="wintrustim">
+<h1>WinTrustIM软件构成以及需要达到的目的<a class="headerlink" href="#wintrustim" title="Permalink to this headline">¶</a></h1>
+<p>WinTrustIM软件的构成主要是IM和SIP，界面使用类似云之讯的功能UI，在UI内，实现IM的功能，聊天，群组，语音（消息），</p>
+<p>文件传递等等，还有需要实现SIP的功能，IM需要使用XMPP协议，SIP使用linphone的开发库来实现</p>
+<div class="section" id="id1">
+<h2>软件构成图例<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><ul class="simple">
+<li>IM UI, SIP UI</li>
+<li>Linphone UI, 云之讯 UI</li>
+<li>Gloox XMPP, LibLinphone</li>
+<li>IM + XMPP 协议堆栈</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="id2">
+<h2>软件协议描述<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><ul>
+<li><p class="first">WinTrustIM主要协议为XMPP和SIP，XMPP协议使用Gloox进行开发，SIP使用Liblinphone进行开发（Liblinphone属于另外一个项目，本文文档中不再进行阐述）主要针对XMPP和Gloox进行阐述</p>
+</li>
+<li><p class="first">XMPP是什么？</p>
+<p>XMPP（Extensible Messageing and Presence Protocol：可扩展消息与存在协议）是目前主流的四种IM（IM：instant messaging,即时消息）协议之一</p>
+<p>其他三种分别为：(IMPP)、(PRIM)、SIP(SIMPLE)
+在这四种协议中，XMPP是最灵活的。XMPP是一种基于XML的协议，它继承了在XML环境中灵活的发展性，因此，基于XMPP的应用具有超强的可扩展性。经过扩展以后的XMPP可以通过发送扩展的信息来处理用户的需求
+以及在XMPP的顶端建立如内容发布系统和基于地址的服务等应用程序，正是因为XMPP的超强扩展性，用他来实现IM是非常方便的，比起来SIP协议，功能强了许多</p>
+</li>
+<li><p class="first">XMPP和IM有什么关系？</p>
+<p>XMPP的前身是Jabber，一个开源形式组织产生的网络即时通信协议</p>
+<p>XMPP中定义了三个角色，客户端，服务器，网关。通信能够在这三者的任意两个之间双向发生。服务器同时承担了客户端信息记录，连接管理和信息的路由功能，
+基本的网络形式是单客户端通过TCP/IP连接到单服务器，然后在之上传输XML作为IM消息</p>
+</li>
+<li><p class="first">XMPP 更多参考</p>
+<p>更多XMPP协议，请参考 wiki.jabbercn.org，页面中给出了更多的XEP扩展协议声明，以下只做简介</p>
+<p>XMPP主要实现3个格式，其他均为XEP扩展:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>presence（IM出席状态，上线，离线，下线，忙碌）
+
+message（消息媒体）
+
+iq（请求--&gt;响应，包含了很多操作，比如心跳，好友列表获取等）
+</pre></div>
+</div>
+<p>下面为 presence，message，iq 组成结构</p>
+<p>出席:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">stream</span><span class="o">&gt;</span>
+
+   <span class="o">&lt;</span><span class="n">presence</span><span class="o">&gt;</span>
+
+      <span class="o">&lt;</span><span class="n">status</span><span class="o">/&gt;</span>
+
+   <span class="o">&lt;/</span><span class="n">presence</span><span class="o">&gt;</span>
+
+<span class="o">&lt;/</span><span class="n">stream</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>消息:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">stream</span><span class="o">&gt;</span>
+
+   <span class="o">&lt;</span><span class="n">message</span><span class="o">&gt;</span>
+
+      <span class="o">&lt;</span><span class="n">body</span><span class="o">/&gt;</span>
+
+  <span class="o">&lt;/</span><span class="n">message</span><span class="o">&gt;</span>
+
+<span class="o">&lt;/</span><span class="n">stream</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>IQ:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">stream</span><span class="o">&gt;</span>
+
+   <span class="o">&lt;</span><span class="n">iq</span><span class="o">&gt;</span>
+
+      <span class="o">&lt;</span><span class="n">bind</span><span class="o">/&gt;</span>
+
+   <span class="o">&lt;/</span><span class="n">iq</span><span class="o">&gt;</span>
+
+<span class="o">&lt;/</span><span class="n">stream</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>以上三种消息，涵盖了XMPP 80%的功能，其他功能用XEP实现（XMPP扩展），更多XMPP协议参考 wiki.jabbercn.org</p>
+</li>
+</ul>
+</div></blockquote>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="index.html">Welcome to WinTrustIM-Doc&#8217;s documentation!</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="kaifahuanjin.html">WinTrustIM软件XMPP协议栈开发环境调试</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2016, LiuZhuan.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+    </div>
+  </body>
+</html>

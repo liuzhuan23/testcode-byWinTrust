@@ -1,0 +1,60 @@
+看到这里，先打断一下，客户端已经具备了，我们开始配置一个XMPP服务器端，OpenFire
+===================================================================================
+
+XMPP服务器的选择（OpenFire）
+--------------------------------
+   Openfire is an instant messaging (IM) and groupchat server that uses the XMPP protocol. 
+   
+   Start off by viewing the Openfire Documentation that can be found in the "documentation" 
+   
+   directory included with this distribution.
+   
+   Openfire 采用Java开发，开源的实时协作（RTC）服务器基于XMPP（Jabber）协议，Openfire安装和使用都非常简单
+   
+   并利用Web进行管理，单台服务器可支持上万并发用户
+   
+   以上是简介，我们使用版本为（30W用户）的开源版本，如果需要更多用户，OpenFire将进行一定的收费
+
+OpenFire的安装与配置，包含程序安装和数据库脚本建立
+----------------------------------------------------------------
+
+   - 下载地址::
+   
+      http://www.igniterealtime.org/downloadServlet?filename=openfire/openfire_4_0_2.tar.gz
+      
+   - 安装步骤::
+   
+      1: 解压缩 tar xvzf openfire_4_0_2.tar.gz
+        
+      2: cd openfire, cd bin （无需改动他的conf文件，因为他是可以使用http进行配置）
+        
+      3: sudo ./openfire start
+        
+      4: 需要用root的权限启动，否则无法启用https，启用https后，同样可以使用UserService的WebService
+        
+         并且如果不使用root权限，每次都需要进行重复的配置
+        
+      5: 配置中，注意需要去掉匿名登录，这个在服务器中去掉后，一些客户端将无法使用匿名方法注册用户，不过这个方法也不用关注
+        
+         因为注册xmpp用户，我们使用openfire的https接口的UserService
+
+      6: 配置中，openfire的bind地址，请一定输入正确的主机IP地址，不可使用回环地址（0.0.0.0），这样的目的是保证数字证书的bind正确
+        
+      7: 数据链接，建议使用外部数据库，也就是MySQL
+        
+      8: 他的更多配置，请参考他的http版本管理器，这里不再阐述
+      
+   - 建立Openfire的外部数据链接 MySQL
+      
+     .. literalinclude:: ./openfiredb.sql
+        
+OpenFire的运行注意事项
+--------------------------------
+   
+   1: 需要root权限启动，否则无法启用https
+   
+   2: 0.0.0.0 地址不可使用，需要使用正确的bind ip address
+   
+   3: 可以调整java虚拟机配置，增加Openfire的处理性能（他是java开源）
+   
+

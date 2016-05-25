@@ -1,0 +1,315 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>WinTrustIM软件XMPP协议栈开发环境调试 &mdash; WinTrustIM-Doc 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="WinTrustIM-Doc 0.1 documentation" href="index.html" />
+    <link rel="prev" title="WinTrustIM软件构成以及需要达到的目的" href="ruanjianmiaoshu.html" /> 
+  </head>
+  <body role="document">
+      <div class="header" role="banner"><h1 class="heading"><a href="index.html">
+          <span>WinTrustIM-Doc 0.1 documentation</span></a></h1>
+        <h2 class="heading"><span>WinTrustIM软件XMPP协议栈开发环境调试</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="ruanjianmiaoshu.html">WinTrustIM软件构成以及需要达到的目的</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="wintrustimxmpp">
+<h1>WinTrustIM软件XMPP协议栈开发环境调试<a class="headerlink" href="#wintrustimxmpp" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="xmpp-gloox">
+<h2>XMPP 的开发库选择（Gloox）<a class="headerlink" href="#xmpp-gloox" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><p>gloox为支持XMPP协议以及其XEP扩展的一个C++库，代码为纯C++编写，依赖库为libidn，xmlpat2-dev，gnutls（可以不去编译支持他），openssl，zlib，pthread</p>
+<p>这个库一直在维护中，算是C/C++的XMPP中维护较好的一个了，其他库也有，但不是更新很慢，支持XEP少，就是缺少说明，或者是代码质量一般，还有一些比较出色的XMPP库，但是是java编写的，不存在C/C++版本</p>
+</div></blockquote>
+</div>
+<div class="section" id="gloox">
+<h2>Gloox 安装的必要条件<a class="headerlink" href="#gloox" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><p>安装步骤:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>tar xvzf gloox-1.0.14-m1.tar.gz （这是一个我修改后的版本，原版本中存在BUG，具体请参看其中的Change-liuzhuan.txt）
+
+./configure --with-gnutls=no （放弃gnutls，选择默认使用openssl）
+
+make
+
+sudo make install
+</pre></div>
+</div>
+</div></blockquote>
+</div>
+<div class="section" id="id1">
+<h2>Gloox 安装后，进行一下代码环境测试<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><p>在make install后，我们写一个测试代码进行编译测试，测试过程也很简单，调用一次头文件和依赖库即可</p>
+<ul>
+<li><p class="first">建立一个测试目录:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">mkdir</span> <span class="n">testgloox</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">进去这个目录开始编写代码:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">testgloox</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">建立Makefile，请注意调整你的CFLAG和LDFLAGS，他们可以帮助你链接到正确的gloox安装路径，以及GCC的设置</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>###############################################################################
+#
+# Generic Makefile for C/C++ Program
+#
+# Author: liuzhuan
+# Date:   2006/03/04
+
+# Description:
+# The makefile searches in &lt;SRCDIRS&gt; directories for the source files
+# with extensions specified in &lt;SOURCE_EXT&gt;, then compiles the sources
+# and finally produces the &lt;PROGRAM&gt;, the executable file, by linking
+# the objectives.
+
+# Usage:
+#   $ make           compile and link the program.
+#   $ make objs      compile only (no linking. Rarely used).
+#   $ make clean     clean the objectives and dependencies.
+#   $ make cleanall  clean the objectives, dependencies and executable.
+#   $ make rebuild   rebuild the program. The same as make clean &amp;&amp; make all.
+#==============================================================================
+
+## Customizing Section: adjust the following if necessary.
+##=============================================================================
+
+# The executable file name.
+# It must be specified.
+# PROGRAM   := a.out    # the executable name
+PROGRAM   := testgl
+
+# The directories in which source files reside.
+# At least one path should be specified.
+# SRCDIRS   := .        # current directory
+SRCDIRS   := .
+
+# The source file types (headers excluded).
+# At least one type should be specified.
+# The valid suffixes are among of .c, .C, .cc, .cpp, .CPP, .c++, .cp, or .cxx.
+# SRCEXTS   := .c      # C program
+# SRCEXTS   := .cpp    # C++ program
+# SRCEXTS   := .c .cpp # C/C++ program
+SRCEXTS   := .cpp
+
+# The flags used by the cpp (man cpp for more).
+# CPPFLAGS  := -Wall -Werror # show all warnings and take them as errors
+CPPFLAGS  :=
+
+# The compiling flags used only for C.
+# If it is a C++ program, no need to set these flags.
+# If it is a C and C++ merging program, set these flags for the C parts.
+# mysql_config --cflags
+CFLAGS    := -g -O0
+CFLAGS    += -I/usr/local/include
+
+# The compiling flags used only for C++.
+# If it is a C program, no need to set these flags.
+# If it is a C and C++ merging program, set these flags for the C++ parts.
+CXXFLAGS  := -g -O0
+CXXFLAGS  += -I/usr/local/include
+
+# The library and the link options ( C and C++ common).
+# mysql_config --libs
+LDFLAGS   := 
+LDFLAGS   += -L/usr/local/lib -lresolv -lidn -lz -lgloox -lssl -lpthread
+
+## Implict Section: change the following only when necessary.
+##=============================================================================
+# The C program compiler. Uncomment it to specify yours explicitly.
+CC      = gcc
+
+# The C++ program compiler. Uncomment it to specify yours explicitly.
+#CXX     = g++
+
+# Uncomment the 2 lines to compile C programs as C++ ones.
+#CC      = $(CXX)
+#CFLAGS  = $(CXXFLAGS)
+
+# The command used to delete file.
+#RM        = rm -f
+
+## Stable Section: usually no need to be changed. But you can add more.
+##=============================================================================
+SHELL   = /bin/sh
+SOURCES = $(foreach d,$(SRCDIRS),$(wildcard $(addprefix $(d)/*,$(SRCEXTS))))
+OBJS    = $(foreach x,$(SRCEXTS), \
+      $(patsubst %$(x),%.o,$(filter %$(x),$(SOURCES))))
+DEPS    = $(patsubst %.o,%.d,$(OBJS))
+
+.PHONY : all objs clean cleanall rebuild
+
+all : $(PROGRAM)
+
+# Rules for creating the dependency files (.d).
+#---------------------------------------------------
+%.d : %.c
+	@$(CC) -MM -MD $(CFLAGS) $&lt;
+
+%.d : %.C
+	@$(CC) -MM -MD $(CXXFLAGS) $&lt;
+
+%.d : %.cc
+	@$(CC) -MM -MD $(CXXFLAGS) $&lt;
+
+%.d : %.cpp
+	@$(CC) -MM -MD $(CXXFLAGS) $&lt;
+
+%.d : %.CPP
+	@$(CC) -MM -MD $(CXXFLAGS) $&lt;
+
+%.d : %.c++
+	@$(CC) -MM -MD $(CXXFLAGS) $&lt;
+
+%.d : %.cp
+	@$(CC) -MM -MD $(CXXFLAGS) $&lt;
+
+%.d : %.cxx
+	@$(CC) -MM -MD $(CXXFLAGS) $&lt;
+
+# Rules for producing the objects.
+#---------------------------------------------------
+objs : $(OBJS)
+
+%.o : %.c
+	$(CC) -c $(CPPFLAGS) $(CFLAGS) $&lt;
+
+%.o : %.C
+	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $&lt;
+
+%.o : %.cc
+	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $&lt;
+
+%.o : %.cpp
+	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $&lt;
+
+%.o : %.CPP
+	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $&lt;
+
+%.o : %.c++
+	$(CXX -c $(CPPFLAGS) $(CXXFLAGS) $&lt;
+
+%.o : %.cp
+	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $&lt;
+
+%.o : %.cxx
+	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $&lt;
+
+# Rules for producing the executable.
+#----------------------------------------------
+$(PROGRAM) : $(OBJS)
+ifeq ($(strip $(SRCEXTS)), .c)  # C file
+	$(CC) -o $(PROGRAM) $(OBJS) $(LDFLAGS)
+else                            # C++ file
+	$(CXX) -o $(PROGRAM) $(OBJS) $(LDFLAGS)
+endif
+
+-include $(DEPS)
+
+rebuild: clean all
+
+clean :
+	@$(RM) *.o *.d $(PROGRAM)
+
+cleanall: clean
+	@$(RM) $(PROGRAM) $(PROGRAM).exe
+
+### End of the Makefile ##  Suggestions are welcome  ## All rights reserved ###
+##############################################################################
+</pre></div>
+</div>
+</li>
+<li><p class="first">建立C文件，很简单，一个编译链接的测试</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>#include &quot;gloox/gloox.h&quot;
+#include &quot;gloox/client.h&quot;
+#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+#include &lt;locale.h&gt;
+#include &lt;cstdio&gt;
+#include &lt;iostream&gt;
+#include &lt;fstream&gt;
+
+//[liuzhuan] 没用其他的数据结构，这里只用了两个命名空间，std和gloox
+using namespace std;
+using namespace gloox;
+
+int main( )
+{
+	//[liuzhuan] 输出gloox版本号，GLOOX_VERSION为gloox中一个全局变量
+	printf(&quot;Gloox Ver: %s\n&quot;, GLOOX_VERSION.c_str());
+
+	return 0;
+}
+
+</pre></div>
+</div>
+</li>
+<li><p class="first">编译:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>make，就可以看到输出目标，testgl
+
+如果你的编译出错了，发生链接的ld错误，请这样配置你的环境
+
+vi /etc/ld.so.conf
+
+输入 /usr/local/lib
+
+执行 sudo ldconfig，重新配置ld环境
+</pre></div>
+</div>
+</li>
+</ul>
+</div></blockquote>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="ruanjianmiaoshu.html">WinTrustIM软件构成以及需要达到的目的</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2016, LiuZhuan.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+    </div>
+  </body>
+</html>

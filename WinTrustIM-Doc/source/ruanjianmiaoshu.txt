@@ -1,0 +1,91 @@
+WinTrustIM软件构成以及需要达到的目的
+=====================================
+
+WinTrustIM软件的构成主要是IM和SIP，界面使用类似云之讯的功能UI，在UI内，实现IM的功能，聊天，群组，语音（消息），
+
+文件传递等等，还有需要实现SIP的功能，IM需要使用XMPP协议，SIP使用linphone的开发库来实现
+
+软件构成图例
+----------------
+
+ - IM UI, SIP UI
+
+ - Linphone UI, 云之讯 UI
+
+ - Gloox XMPP, LibLinphone
+
+ - IM + XMPP 协议堆栈
+
+软件协议描述
+----------------
+
+ - WinTrustIM主要协议为XMPP和SIP，XMPP协议使用Gloox进行开发，SIP使用Liblinphone进行开发（Liblinphone属于另外一个项目，本文文档中不再进行阐述）主要针对XMPP和Gloox进行阐述
+
+ - XMPP是什么？
+ 
+   XMPP（Extensible Messageing and Presence Protocol：可扩展消息与存在协议）是目前主流的四种IM（IM：instant messaging,即时消息）协议之一
+   
+   其他三种分别为：(IMPP)、(PRIM)、SIP(SIMPLE)
+   在这四种协议中，XMPP是最灵活的。XMPP是一种基于XML的协议，它继承了在XML环境中灵活的发展性，因此，基于XMPP的应用具有超强的可扩展性。经过扩展以后的XMPP可以通过发送扩展的信息来处理用户的需求
+   以及在XMPP的顶端建立如内容发布系统和基于地址的服务等应用程序，正是因为XMPP的超强扩展性，用他来实现IM是非常方便的，比起来SIP协议，功能强了许多
+   
+ - XMPP和IM有什么关系？
+  
+   XMPP的前身是Jabber，一个开源形式组织产生的网络即时通信协议
+    
+   XMPP中定义了三个角色，客户端，服务器，网关。通信能够在这三者的任意两个之间双向发生。服务器同时承担了客户端信息记录，连接管理和信息的路由功能，
+   基本的网络形式是单客户端通过TCP/IP连接到单服务器，然后在之上传输XML作为IM消息
+   
+ - XMPP 更多参考
+   
+   更多XMPP协议，请参考 wiki.jabbercn.org，页面中给出了更多的XEP扩展协议声明，以下只做简介
+   
+   XMPP主要实现3个格式，其他均为XEP扩展::
+   
+      presence（IM出席状态，上线，离线，下线，忙碌）
+   
+      message（消息媒体）
+   
+      iq（请求-->响应，包含了很多操作，比如心跳，好友列表获取等）
+   
+   下面为 presence，message，iq 组成结构
+      
+   出席::
+   
+      <stream>
+   
+         <presence>
+     
+            <status/>
+       
+         </presence>
+     
+      </stream>
+  
+   消息::
+   
+      <stream>
+  
+         <message>
+    
+            <body/>
+      
+        </message>
+    
+      </stream>
+   
+   IQ::
+   
+      <stream>
+  
+         <iq>
+    
+            <bind/>
+      
+         </iq>
+    
+      </stream>
+   
+   以上三种消息，涵盖了XMPP 80%的功能，其他功能用XEP实现（XMPP扩展），更多XMPP协议参考 wiki.jabbercn.org
+   
+   

@@ -1,0 +1,500 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>看到这里，先打断一下，客户端已经具备了，我们开始配置一个XMPP服务器端，OpenFire &mdash; WinTrustIM-Doc 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="WinTrustIM-Doc 0.1 documentation" href="index.html" />
+    <link rel="prev" title="WinTrustIM软件XMPP协议栈开发环境调试" href="kaifahuanjin.html" /> 
+  </head>
+  <body role="document">
+      <div class="header" role="banner"><h1 class="heading"><a href="index.html">
+          <span>WinTrustIM-Doc 0.1 documentation</span></a></h1>
+        <h2 class="heading"><span>看到这里，先打断一下，客户端已经具备了，我们开始配置一个XMPP服务器端，OpenFire</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="kaifahuanjin.html">WinTrustIM软件XMPP协议栈开发环境调试</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="xmpp-openfire">
+<h1>看到这里，先打断一下，客户端已经具备了，我们开始配置一个XMPP服务器端，OpenFire<a class="headerlink" href="#xmpp-openfire" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="id1">
+<h2>XMPP服务器的选择（OpenFire）<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><p>Openfire is an instant messaging (IM) and groupchat server that uses the XMPP protocol.</p>
+<p>Start off by viewing the Openfire Documentation that can be found in the &#8220;documentation&#8221;</p>
+<p>directory included with this distribution.</p>
+<p>Openfire 采用Java开发，开源的实时协作（RTC）服务器基于XMPP（Jabber）协议，Openfire安装和使用都非常简单</p>
+<p>并利用Web进行管理，单台服务器可支持上万并发用户</p>
+<p>以上是简介，我们使用版本为（30W用户）的开源版本，如果需要更多用户，OpenFire将进行一定的收费</p>
+</div></blockquote>
+</div>
+<div class="section" id="openfire">
+<h2>OpenFire的安装与配置，包含程序安装和数据库脚本建立<a class="headerlink" href="#openfire" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><ul>
+<li><p class="first">下载地址:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>http://www.igniterealtime.org/downloadServlet?filename=openfire/openfire_4_0_2.tar.gz
+</pre></div>
+</div>
+</li>
+<li><p class="first">安装步骤:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>1: 解压缩 tar xvzf openfire_4_0_2.tar.gz
+
+2: cd openfire, cd bin （无需改动他的conf文件，因为他是可以使用http进行配置）
+
+3: sudo ./openfire start
+
+4: 需要用root的权限启动，否则无法启用https，启用https后，同样可以使用UserService的WebService
+
+   并且如果不使用root权限，每次都需要进行重复的配置
+
+5: 配置中，注意需要去掉匿名登录，这个在服务器中去掉后，一些客户端将无法使用匿名方法注册用户，不过这个方法也不用关注
+
+   因为注册xmpp用户，我们使用openfire的https接口的UserService
+
+6: 配置中，openfire的bind地址，请一定输入正确的主机IP地址，不可使用回环地址（0.0.0.0），这样的目的是保证数字证书的bind正确
+
+7: 数据链接，建议使用外部数据库，也就是MySQL
+
+8: 他的更多配置，请参考他的http版本管理器，这里不再阐述
+</pre></div>
+</div>
+</li>
+<li><p class="first">建立Openfire的外部数据链接 MySQL</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># $Revision: 1650 $</span>
+<span class="c1"># $Date: 2005-07-20 00:18:17 -0300 (Wed, 20 Jul 2005) $</span>
+
+<span class="n">CREATE</span> <span class="n">TABLE</span> <span class="n">ofUser</span> <span class="p">(</span>
+  <span class="n">username</span>              <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">64</span><span class="p">)</span>     <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">storedKey</span>             <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">32</span><span class="p">),</span>
+  <span class="n">serverKey</span>             <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">32</span><span class="p">),</span>
+  <span class="n">salt</span>                  <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">32</span><span class="p">),</span>
+  <span class="n">iterations</span>            <span class="n">INTEGER</span><span class="p">,</span>
+  <span class="n">plainPassword</span>         <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">32</span><span class="p">),</span>
+  <span class="n">encryptedPassword</span>     <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">255</span><span class="p">),</span>
+  <span class="n">name</span>                  <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">100</span><span class="p">),</span>
+  <span class="n">email</span>                 <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">100</span><span class="p">),</span>
+  <span class="n">creationDate</span>          <span class="n">CHAR</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span>        <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">modificationDate</span>      <span class="n">CHAR</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span>        <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">PRIMARY</span> <span class="n">KEY</span> <span class="p">(</span><span class="n">username</span><span class="p">),</span>
+  <span class="n">INDEX</span> <span class="n">ofUser_cDate_idx</span> <span class="p">(</span><span class="n">creationDate</span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="n">CREATE</span> <span class="n">TABLE</span> <span class="n">ofUserProp</span> <span class="p">(</span>
+  <span class="n">username</span>              <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">64</span><span class="p">)</span>     <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">name</span>                  <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>    <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">propValue</span>             <span class="n">TEXT</span>            <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">PRIMARY</span> <span class="n">KEY</span> <span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="n">CREATE</span> <span class="n">TABLE</span> <span class="n">ofUserFlag</span> <span class="p">(</span>
+  <span class="n">username</span>              <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">64</span><span class="p">)</span>     <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">name</span>                  <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>    <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">startTime</span>             <span class="n">CHAR</span><span class="p">(</span><span class="mi">15</span><span class="p">),</span>
+  <span class="n">endTime</span>               <span class="n">CHAR</span><span class="p">(</span><span class="mi">15</span><span class="p">),</span>
+  <span class="n">PRIMARY</span> <span class="n">KEY</span> <span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span>
+  <span class="n">INDEX</span> <span class="n">ofUserFlag_sTime_idx</span> <span class="p">(</span><span class="n">startTime</span><span class="p">),</span>
+  <span class="n">INDEX</span> <span class="n">ofUserFlag_eTime_idx</span> <span class="p">(</span><span class="n">endTime</span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="n">CREATE</span> <span class="n">TABLE</span> <span class="n">ofPrivate</span> <span class="p">(</span>
+  <span class="n">username</span>              <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">64</span><span class="p">)</span>     <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">name</span>                  <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>    <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">namespace</span>             <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">200</span><span class="p">)</span>    <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">privateData</span>           <span class="n">TEXT</span>            <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">PRIMARY</span> <span class="n">KEY</span> <span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">namespace</span><span class="p">(</span><span class="mi">100</span><span class="p">))</span>
+<span class="p">);</span>
+
+<span class="n">CREATE</span> <span class="n">TABLE</span> <span class="n">ofOffline</span> <span class="p">(</span>
+  <span class="n">username</span>              <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">64</span><span class="p">)</span>     <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">messageID</span>             <span class="n">BIGINT</span>          <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">creationDate</span>          <span class="n">CHAR</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span>        <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">messageSize</span>           <span class="n">INTEGER</span>         <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">stanza</span>                <span class="n">TEXT</span>            <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">PRIMARY</span> <span class="n">KEY</span> <span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">messageID</span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="n">CREATE</span> <span class="n">TABLE</span> <span class="n">ofPresence</span> <span class="p">(</span>
+  <span class="n">username</span>              <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">64</span><span class="p">)</span>     <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">offlinePresence</span>       <span class="n">TEXT</span><span class="p">,</span>
+  <span class="n">offlineDate</span>           <span class="n">CHAR</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span>     <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">PRIMARY</span> <span class="n">KEY</span> <span class="p">(</span><span class="n">username</span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="n">CREATE</span> <span class="n">TABLE</span> <span class="n">ofRoster</span> <span class="p">(</span>
+  <span class="n">rosterID</span>              <span class="n">BIGINT</span>          <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">username</span>              <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">64</span><span class="p">)</span>     <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">jid</span>                   <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>   <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">sub</span>                   <span class="n">TINYINT</span>         <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">ask</span>                   <span class="n">TINYINT</span>         <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">recv</span>                  <span class="n">TINYINT</span>         <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">nick</span>                  <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">255</span><span class="p">),</span>
+  <span class="n">PRIMARY</span> <span class="n">KEY</span> <span class="p">(</span><span class="n">rosterID</span><span class="p">),</span>
+  <span class="n">INDEX</span> <span class="n">ofRoster_unameid_idx</span> <span class="p">(</span><span class="n">username</span><span class="p">),</span>
+  <span class="n">INDEX</span> <span class="n">ofRoster_jid_idx</span> <span class="p">(</span><span class="n">jid</span><span class="p">(</span><span class="mi">255</span><span class="p">))</span>
+<span class="p">);</span>
+
+<span class="n">CREATE</span> <span class="n">TABLE</span> <span class="n">ofRosterGroups</span> <span class="p">(</span>
+  <span class="n">rosterID</span>              <span class="n">BIGINT</span>          <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">rank</span>                  <span class="n">TINYINT</span>         <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">groupName</span>             <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span>    <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">PRIMARY</span> <span class="n">KEY</span> <span class="p">(</span><span class="n">rosterID</span><span class="p">,</span> <span class="n">rank</span><span class="p">),</span>
+  <span class="n">INDEX</span> <span class="n">ofRosterGroup_rosterid_idx</span> <span class="p">(</span><span class="n">rosterID</span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="n">CREATE</span> <span class="n">TABLE</span> <span class="n">ofVCard</span> <span class="p">(</span>
+  <span class="n">username</span>              <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">64</span><span class="p">)</span>     <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">vcard</span>                 <span class="n">MEDIUMTEXT</span>      <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">PRIMARY</span> <span class="n">KEY</span> <span class="p">(</span><span class="n">username</span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="n">CREATE</span> <span class="n">TABLE</span> <span class="n">ofGroup</span> <span class="p">(</span>
+  <span class="n">groupName</span>             <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span>     <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">description</span>           <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">255</span><span class="p">),</span>
+  <span class="n">PRIMARY</span> <span class="n">KEY</span> <span class="p">(</span><span class="n">groupName</span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="n">CREATE</span> <span class="n">TABLE</span> <span class="n">ofGroupProp</span> <span class="p">(</span>
+  <span class="n">groupName</span>             <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span>     <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">name</span>                  <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>    <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">propValue</span>             <span class="n">TEXT</span>            <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">PRIMARY</span> <span class="n">KEY</span> <span class="p">(</span><span class="n">groupName</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="n">CREATE</span> <span class="n">TABLE</span> <span class="n">ofGroupUser</span> <span class="p">(</span>
+  <span class="n">groupName</span>             <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span>     <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">username</span>              <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>    <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">administrator</span>         <span class="n">TINYINT</span>         <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">PRIMARY</span> <span class="n">KEY</span> <span class="p">(</span><span class="n">groupName</span><span class="p">,</span> <span class="n">username</span><span class="p">,</span> <span class="n">administrator</span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="n">CREATE</span> <span class="n">TABLE</span> <span class="n">ofID</span> <span class="p">(</span>
+  <span class="n">idType</span>                <span class="n">INTEGER</span>         <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="nb">id</span>                    <span class="n">BIGINT</span>          <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">PRIMARY</span> <span class="n">KEY</span> <span class="p">(</span><span class="n">idType</span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="n">CREATE</span> <span class="n">TABLE</span> <span class="n">ofProperty</span> <span class="p">(</span>
+  <span class="n">name</span>        <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>              <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">propValue</span>   <span class="n">TEXT</span>                      <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">PRIMARY</span> <span class="n">KEY</span> <span class="p">(</span><span class="n">name</span><span class="p">)</span>
+<span class="p">);</span>
+
+
+<span class="n">CREATE</span> <span class="n">TABLE</span> <span class="n">ofVersion</span> <span class="p">(</span>
+  <span class="n">name</span>     <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span>  <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">version</span>  <span class="n">INTEGER</span>  <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">PRIMARY</span> <span class="n">KEY</span> <span class="p">(</span><span class="n">name</span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="n">CREATE</span> <span class="n">TABLE</span> <span class="n">ofExtComponentConf</span> <span class="p">(</span>
+  <span class="n">subdomain</span>             <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span>    <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">wildcard</span>              <span class="n">TINYINT</span>         <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">secret</span>                <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">255</span><span class="p">),</span>
+  <span class="n">permission</span>            <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>     <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">PRIMARY</span> <span class="n">KEY</span> <span class="p">(</span><span class="n">subdomain</span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="n">CREATE</span> <span class="n">TABLE</span> <span class="n">ofRemoteServerConf</span> <span class="p">(</span>
+  <span class="n">xmppDomain</span>            <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span>    <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">remotePort</span>            <span class="n">INTEGER</span><span class="p">,</span>
+  <span class="n">permission</span>            <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>     <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">PRIMARY</span> <span class="n">KEY</span> <span class="p">(</span><span class="n">xmppDomain</span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="n">CREATE</span> <span class="n">TABLE</span> <span class="n">ofPrivacyList</span> <span class="p">(</span>
+  <span class="n">username</span>              <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">64</span><span class="p">)</span>     <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">name</span>                  <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>    <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">isDefault</span>             <span class="n">TINYINT</span>         <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="nb">list</span>                  <span class="n">TEXT</span>            <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">PRIMARY</span> <span class="n">KEY</span> <span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span>
+  <span class="n">INDEX</span> <span class="n">ofPrivacyList_default_idx</span> <span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">isDefault</span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="n">CREATE</span> <span class="n">TABLE</span> <span class="n">ofSASLAuthorized</span> <span class="p">(</span>
+  <span class="n">username</span>            <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">64</span><span class="p">)</span>   <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">principal</span>           <span class="n">TEXT</span>          <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">PRIMARY</span> <span class="n">KEY</span> <span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">principal</span><span class="p">(</span><span class="mi">200</span><span class="p">))</span>
+<span class="p">);</span>
+
+<span class="n">CREATE</span> <span class="n">TABLE</span> <span class="n">ofSecurityAuditLog</span> <span class="p">(</span>
+  <span class="n">msgID</span>                 <span class="n">BIGINT</span>          <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">username</span>              <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">64</span><span class="p">)</span>     <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">entryStamp</span>            <span class="n">BIGINT</span>          <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">summary</span>               <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span>    <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">node</span>                  <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span>    <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">details</span>               <span class="n">TEXT</span><span class="p">,</span>
+  <span class="n">PRIMARY</span> <span class="n">KEY</span> <span class="p">(</span><span class="n">msgID</span><span class="p">),</span>
+  <span class="n">INDEX</span> <span class="n">ofSecurityAuditLog_tstamp_idx</span> <span class="p">(</span><span class="n">entryStamp</span><span class="p">),</span>
+  <span class="n">INDEX</span> <span class="n">ofSecurityAuditLog_uname_idx</span> <span class="p">(</span><span class="n">username</span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="c1"># MUC Tables</span>
+
+<span class="n">CREATE</span> <span class="n">TABLE</span> <span class="n">ofMucService</span> <span class="p">(</span>
+  <span class="n">serviceID</span>           <span class="n">BIGINT</span>        <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">subdomain</span>           <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span>  <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">description</span>         <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">255</span><span class="p">),</span>
+  <span class="n">isHidden</span>            <span class="n">TINYINT</span>       <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">PRIMARY</span> <span class="n">KEY</span> <span class="p">(</span><span class="n">subdomain</span><span class="p">),</span>
+  <span class="n">INDEX</span> <span class="n">ofMucService_serviceid_idx</span> <span class="p">(</span><span class="n">serviceID</span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="n">CREATE</span> <span class="n">TABLE</span> <span class="n">ofMucServiceProp</span> <span class="p">(</span>
+  <span class="n">serviceID</span>           <span class="n">BIGINT</span>        <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">name</span>                <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>  <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">propValue</span>           <span class="n">TEXT</span>          <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">PRIMARY</span> <span class="n">KEY</span> <span class="p">(</span><span class="n">serviceID</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="n">CREATE</span> <span class="n">TABLE</span> <span class="n">ofMucRoom</span> <span class="p">(</span>
+  <span class="n">serviceID</span>           <span class="n">BIGINT</span>        <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">roomID</span>              <span class="n">BIGINT</span>        <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">creationDate</span>        <span class="n">CHAR</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span>      <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">modificationDate</span>    <span class="n">CHAR</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span>      <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">name</span>                <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span>   <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">naturalName</span>         <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span>  <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">description</span>         <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">255</span><span class="p">),</span>
+  <span class="n">lockedDate</span>          <span class="n">CHAR</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span>      <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">emptyDate</span>           <span class="n">CHAR</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span>      <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">canChangeSubject</span>    <span class="n">TINYINT</span>       <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">maxUsers</span>            <span class="n">INTEGER</span>       <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">publicRoom</span>          <span class="n">TINYINT</span>       <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">moderated</span>           <span class="n">TINYINT</span>       <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">membersOnly</span>         <span class="n">TINYINT</span>       <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">canInvite</span>           <span class="n">TINYINT</span>       <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">roomPassword</span>        <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span>   <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">canDiscoverJID</span>      <span class="n">TINYINT</span>       <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">logEnabled</span>          <span class="n">TINYINT</span>       <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">subject</span>             <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>  <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">rolesToBroadcast</span>    <span class="n">TINYINT</span>       <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">useReservedNick</span>     <span class="n">TINYINT</span>       <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">canChangeNick</span>       <span class="n">TINYINT</span>       <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">canRegister</span>         <span class="n">TINYINT</span>       <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">PRIMARY</span> <span class="n">KEY</span> <span class="p">(</span><span class="n">serviceID</span><span class="p">,</span><span class="n">name</span><span class="p">),</span>
+  <span class="n">INDEX</span> <span class="n">ofMucRoom_roomid_idx</span> <span class="p">(</span><span class="n">roomID</span><span class="p">),</span>
+  <span class="n">INDEX</span> <span class="n">ofMucRoom_serviceid_idx</span> <span class="p">(</span><span class="n">serviceID</span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="n">CREATE</span> <span class="n">TABLE</span> <span class="n">ofMucRoomProp</span> <span class="p">(</span>
+  <span class="n">roomID</span>                <span class="n">BIGINT</span>          <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">name</span>                  <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>    <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">propValue</span>             <span class="n">TEXT</span>            <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">PRIMARY</span> <span class="n">KEY</span> <span class="p">(</span><span class="n">roomID</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="n">CREATE</span> <span class="n">TABLE</span> <span class="n">ofMucAffiliation</span> <span class="p">(</span>
+  <span class="n">roomID</span>              <span class="n">BIGINT</span>        <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">jid</span>                 <span class="n">TEXT</span>          <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">affiliation</span>         <span class="n">TINYINT</span>       <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">PRIMARY</span> <span class="n">KEY</span> <span class="p">(</span><span class="n">roomID</span><span class="p">,</span><span class="n">jid</span><span class="p">(</span><span class="mi">70</span><span class="p">))</span>
+<span class="p">);</span>
+
+<span class="n">CREATE</span> <span class="n">TABLE</span> <span class="n">ofMucMember</span> <span class="p">(</span>
+  <span class="n">roomID</span>              <span class="n">BIGINT</span>        <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">jid</span>                 <span class="n">TEXT</span>          <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">nickname</span>            <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span>  <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">firstName</span>           <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>  <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">lastName</span>            <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>  <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">url</span>                 <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>  <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">email</span>               <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>  <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">faqentry</span>            <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>  <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">PRIMARY</span> <span class="n">KEY</span> <span class="p">(</span><span class="n">roomID</span><span class="p">,</span><span class="n">jid</span><span class="p">(</span><span class="mi">70</span><span class="p">))</span>
+<span class="p">);</span>
+
+<span class="n">CREATE</span> <span class="n">TABLE</span> <span class="n">ofMucConversationLog</span> <span class="p">(</span>
+  <span class="n">roomID</span>              <span class="n">BIGINT</span>        <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">sender</span>              <span class="n">TEXT</span>          <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">nickname</span>            <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span>  <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">logTime</span>             <span class="n">CHAR</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span>      <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">subject</span>             <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span>  <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">body</span>                <span class="n">TEXT</span>          <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">INDEX</span> <span class="n">ofMucConversationLog_time_idx</span> <span class="p">(</span><span class="n">logTime</span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="c1"># PubSub Tables</span>
+
+<span class="n">CREATE</span> <span class="n">TABLE</span> <span class="n">ofPubsubNode</span> <span class="p">(</span>
+  <span class="n">serviceID</span>           <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>  <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">nodeID</span>              <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>  <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">leaf</span>                <span class="n">TINYINT</span>       <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">creationDate</span>        <span class="n">CHAR</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span>      <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">modificationDate</span>    <span class="n">CHAR</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span>      <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">parent</span>              <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>  <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">deliverPayloads</span>     <span class="n">TINYINT</span>       <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">maxPayloadSize</span>      <span class="n">INTEGER</span>       <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">persistItems</span>        <span class="n">TINYINT</span>       <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">maxItems</span>            <span class="n">INTEGER</span>       <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">notifyConfigChanges</span> <span class="n">TINYINT</span>       <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">notifyDelete</span>        <span class="n">TINYINT</span>       <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">notifyRetract</span>       <span class="n">TINYINT</span>       <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">presenceBased</span>       <span class="n">TINYINT</span>       <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">sendItemSubscribe</span>   <span class="n">TINYINT</span>       <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">publisherModel</span>      <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span>   <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">subscriptionEnabled</span> <span class="n">TINYINT</span>       <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">configSubscription</span>  <span class="n">TINYINT</span>       <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">accessModel</span>         <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>   <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">payloadType</span>         <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>  <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">bodyXSLT</span>            <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>  <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">dataformXSLT</span>        <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>  <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">creator</span>             <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span> <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">description</span>         <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span>  <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">language</span>            <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span>  <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">name</span>                <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span>   <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">replyPolicy</span>         <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span>   <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">associationPolicy</span>   <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span>   <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">maxLeafNodes</span>        <span class="n">INTEGER</span>       <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">PRIMARY</span> <span class="n">KEY</span> <span class="p">(</span><span class="n">serviceID</span><span class="p">,</span> <span class="n">nodeID</span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="n">CREATE</span> <span class="n">TABLE</span> <span class="n">ofPubsubNodeJIDs</span> <span class="p">(</span>
+  <span class="n">serviceID</span>           <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>  <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">nodeID</span>              <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>  <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">jid</span>                 <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span>  <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">associationType</span>     <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>   <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">PRIMARY</span> <span class="n">KEY</span> <span class="p">(</span><span class="n">serviceID</span><span class="p">,</span> <span class="n">nodeID</span><span class="p">,</span> <span class="n">jid</span><span class="p">(</span><span class="mi">70</span><span class="p">))</span>
+<span class="p">);</span>
+
+<span class="n">CREATE</span> <span class="n">TABLE</span> <span class="n">ofPubsubNodeGroups</span> <span class="p">(</span>
+  <span class="n">serviceID</span>           <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>  <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">nodeID</span>              <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>  <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">rosterGroup</span>         <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>   <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">INDEX</span> <span class="n">ofPubsubNodeGroups_idx</span> <span class="p">(</span><span class="n">serviceID</span><span class="p">,</span> <span class="n">nodeID</span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="n">CREATE</span> <span class="n">TABLE</span> <span class="n">ofPubsubAffiliation</span> <span class="p">(</span>
+  <span class="n">serviceID</span>           <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>  <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">nodeID</span>              <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>  <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">jid</span>                 <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span> <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">affiliation</span>         <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>   <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">PRIMARY</span> <span class="n">KEY</span> <span class="p">(</span><span class="n">serviceID</span><span class="p">,</span> <span class="n">nodeID</span><span class="p">,</span> <span class="n">jid</span><span class="p">(</span><span class="mi">70</span><span class="p">))</span>
+<span class="p">);</span>
+
+<span class="n">CREATE</span> <span class="n">TABLE</span> <span class="n">ofPubsubItem</span> <span class="p">(</span>
+  <span class="n">serviceID</span>           <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>  <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">nodeID</span>              <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>  <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="nb">id</span>                  <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>  <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">jid</span>                 <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span>  <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">creationDate</span>        <span class="n">CHAR</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span>      <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">payload</span>             <span class="n">MEDIUMTEXT</span>    <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">PRIMARY</span> <span class="n">KEY</span> <span class="p">(</span><span class="n">serviceID</span><span class="p">,</span> <span class="n">nodeID</span><span class="p">,</span> <span class="nb">id</span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="n">CREATE</span> <span class="n">TABLE</span> <span class="n">ofPubsubSubscription</span> <span class="p">(</span>
+  <span class="n">serviceID</span>           <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>  <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">nodeID</span>              <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>  <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="nb">id</span>                  <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>  <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">jid</span>                 <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span> <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">owner</span>               <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span> <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">state</span>               <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span>   <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">deliver</span>             <span class="n">TINYINT</span>       <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">digest</span>              <span class="n">TINYINT</span>       <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">digest_frequency</span>    <span class="n">INT</span>           <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">expire</span>              <span class="n">CHAR</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span>      <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">includeBody</span>         <span class="n">TINYINT</span>       <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">showValues</span>          <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span>   <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">subscriptionType</span>    <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>   <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">subscriptionDepth</span>   <span class="n">TINYINT</span>       <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">keyword</span>             <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">200</span><span class="p">)</span>  <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">PRIMARY</span> <span class="n">KEY</span> <span class="p">(</span><span class="n">serviceID</span><span class="p">,</span> <span class="n">nodeID</span><span class="p">,</span> <span class="nb">id</span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="n">CREATE</span> <span class="n">TABLE</span> <span class="n">ofPubsubDefaultConf</span> <span class="p">(</span>
+  <span class="n">serviceID</span>           <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>  <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">leaf</span>                <span class="n">TINYINT</span>       <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">deliverPayloads</span>     <span class="n">TINYINT</span>       <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">maxPayloadSize</span>      <span class="n">INTEGER</span>       <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">persistItems</span>        <span class="n">TINYINT</span>       <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">maxItems</span>            <span class="n">INTEGER</span>       <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">notifyConfigChanges</span> <span class="n">TINYINT</span>       <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">notifyDelete</span>        <span class="n">TINYINT</span>       <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">notifyRetract</span>       <span class="n">TINYINT</span>       <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">presenceBased</span>       <span class="n">TINYINT</span>       <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">sendItemSubscribe</span>   <span class="n">TINYINT</span>       <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">publisherModel</span>      <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span>   <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">subscriptionEnabled</span> <span class="n">TINYINT</span>       <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">accessModel</span>         <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>   <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">language</span>            <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span>  <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">replyPolicy</span>         <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span>   <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">associationPolicy</span>   <span class="n">VARCHAR</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span>   <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">maxLeafNodes</span>        <span class="n">INTEGER</span>       <span class="n">NOT</span> <span class="n">NULL</span><span class="p">,</span>
+  <span class="n">PRIMARY</span> <span class="n">KEY</span> <span class="p">(</span><span class="n">serviceID</span><span class="p">,</span> <span class="n">leaf</span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="c1"># Finally, insert default table values.</span>
+
+<span class="n">INSERT</span> <span class="n">INTO</span> <span class="n">ofID</span> <span class="p">(</span><span class="n">idType</span><span class="p">,</span> <span class="nb">id</span><span class="p">)</span> <span class="n">VALUES</span> <span class="p">(</span><span class="mi">18</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+<span class="n">INSERT</span> <span class="n">INTO</span> <span class="n">ofID</span> <span class="p">(</span><span class="n">idType</span><span class="p">,</span> <span class="nb">id</span><span class="p">)</span> <span class="n">VALUES</span> <span class="p">(</span><span class="mi">19</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+<span class="n">INSERT</span> <span class="n">INTO</span> <span class="n">ofID</span> <span class="p">(</span><span class="n">idType</span><span class="p">,</span> <span class="nb">id</span><span class="p">)</span> <span class="n">VALUES</span> <span class="p">(</span><span class="mi">23</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+<span class="n">INSERT</span> <span class="n">INTO</span> <span class="n">ofID</span> <span class="p">(</span><span class="n">idType</span><span class="p">,</span> <span class="nb">id</span><span class="p">)</span> <span class="n">VALUES</span> <span class="p">(</span><span class="mi">26</span><span class="p">,</span> <span class="mi">2</span><span class="p">);</span>
+
+<span class="n">INSERT</span> <span class="n">INTO</span> <span class="n">ofVersion</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">version</span><span class="p">)</span> <span class="n">VALUES</span> <span class="p">(</span><span class="s1">&#39;openfire&#39;</span><span class="p">,</span> <span class="mi">22</span><span class="p">);</span>
+
+<span class="c1"># Entry for admin user</span>
+<span class="n">INSERT</span> <span class="n">INTO</span> <span class="n">ofUser</span> <span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">plainPassword</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">email</span><span class="p">,</span> <span class="n">creationDate</span><span class="p">,</span> <span class="n">modificationDate</span><span class="p">)</span>
+    <span class="n">VALUES</span> <span class="p">(</span><span class="s1">&#39;admin&#39;</span><span class="p">,</span> <span class="s1">&#39;admin&#39;</span><span class="p">,</span> <span class="s1">&#39;Administrator&#39;</span><span class="p">,</span> <span class="s1">&#39;admin@example.com&#39;</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">);</span>
+
+<span class="c1"># Entry for default conference service</span>
+<span class="n">INSERT</span> <span class="n">INTO</span> <span class="n">ofMucService</span> <span class="p">(</span><span class="n">serviceID</span><span class="p">,</span> <span class="n">subdomain</span><span class="p">,</span> <span class="n">isHidden</span><span class="p">)</span> <span class="n">VALUES</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;conference&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="id2">
+<h2>OpenFire的运行注意事项<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><p>1: 需要root权限启动，否则无法启用https</p>
+<p>2: 0.0.0.0 地址不可使用，需要使用正确的bind ip address</p>
+<p>3: 可以调整java虚拟机配置，增加Openfire的处理性能（他是java开源）</p>
+</div></blockquote>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="kaifahuanjin.html">WinTrustIM软件XMPP协议栈开发环境调试</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2016, LiuZhuan.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+    </div>
+  </body>
+</html>

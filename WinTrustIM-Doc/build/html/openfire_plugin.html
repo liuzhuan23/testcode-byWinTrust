@@ -1,0 +1,647 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>OpenFire 我们可以进行什么样的二次开发？ &mdash; WinTrustIM-Doc 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="WinTrustIM-Doc 0.1 documentation" href="index.html" />
+    <link rel="prev" title="看到这里，先打断一下，客户端已经具备了，我们开始配置一个XMPP服务器端，OpenFire" href="openfire.html" /> 
+  </head>
+  <body role="document">
+      <div class="header" role="banner"><h1 class="heading"><a href="index.html">
+          <span>WinTrustIM-Doc 0.1 documentation</span></a></h1>
+        <h2 class="heading"><span>OpenFire 我们可以进行什么样的二次开发？</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="openfire.html">看到这里，先打断一下，客户端已经具备了，我们开始配置一个XMPP服务器端，OpenFire</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="openfire">
+<h1>OpenFire 我们可以进行什么样的二次开发？<a class="headerlink" href="#openfire" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="openfireplugins">
+<h2>答案就是插件，openfire的plugins机制<a class="headerlink" href="#openfireplugins" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><p>Plugins extend and enhance the functionality of Openfire (formerly Wildfire).</p>
+<p>Below is a list of both open source plugins available for Openfire. To install plugins,</p>
+<p>copy the .jar file into the plugins directory of your Openfire installation.</p>
+<p>Beta plugins are also available.</p>
+<p>更多插件来源参考URL：
+<a class="reference external" href="http://www.igniterealtime.org/projects/openfire/plugins.jsp">http://www.igniterealtime.org/projects/openfire/plugins.jsp</a></p>
+</div></blockquote>
+</div>
+<div class="section" id="id1">
+<h2>通过一个例子，我们看看插件的使用<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><p>UserService插件，功能是通过json调用，生成用户，删除用户等用户管理方法</p>
+<ul>
+<li><p class="first">插件安装调用方法:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>Copy userservice.jar into the plugins directory of your Openfire server.
+The plugin will then be automatically deployed. To upgrade to a new version,
+copy the new userservice.jar file over the existing file.
+
+下载userservice.jar，然后放置进去openfire/plugins目录即可
+</pre></div>
+</div>
+</li>
+<li><p class="first">使用时候，注意特别问题如下:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>注意他的sevlet的设置init代码
+public void init(ServletConfig servletConfig) throws ServletException
+{
+   super.init(servletConfig);
+   plugin = (UserServicePlugin) XMPPServer.getInstance().getPluginManager().getPlugin(&quot;userservice&quot;);
+
+   // Exclude this servlet from requiring the user to login
+   AuthCheckFilter.addExclude(&quot;userService/userservice&quot;);
+}
+这里引用的方法是&quot;userService/userservice&quot;, 在插件jar包解压缩后，会自动形成目录，比如：userservice.jar，解开压缩后就是
+userservice，调用时候，会误以为这个就是方法，比如：http://192.168.199.225:9090/plugins/userservice/userservce?
+这里就不对了，和serlet中声明出去的方法不同，他是&quot;userService/userservice&quot;，所以，这里在使用插件的时候要特别注意，
+看他的init是啥，再去调用，一定要先去看看插件的sevlet的设置init方法中，声明出去的Exclude方法，在决定调用接口名字！
+
+安装后，需要在&quot;服务器设置&quot;--&gt;&quot;特性设置&quot;中，启用插件，插件默认是Disable的，需要Enable
+</pre></div>
+</div>
+</li>
+<li><p class="first">PHP可以使用curl方法和fopen方法进行该RPC的调用，全部为Get请求，服务器使用apache2，CGI采用PHP，客户端使用curl:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>Apache2和PHP，以及curl的安装方法不在本文的阐述之内，请另行参考
+</pre></div>
+</div>
+</li>
+<li><p class="first">Apache2服务器下的userservice调用脚本，该脚本提供一些方法，作为中间层为http客户提供RPC，使其可以访问userservice插件</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>&lt;?php
+/****************************************************************
+MIT License
+Copyright (c) 2013 - 2014 Cyerus, Jordy Wille
+Permission is hereby granted, free of charge, to any person
+obtaining a copy of this software and associated documentation
+files (the &quot;Software&quot;), to deal in the Software without
+restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following
+conditions:
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+****************************************************************/
+
+
+/***************************************************************
+* A simple PHP class for use with the OpenFire UserService plugin.
+*
+* @author Cyerus
+****************************************************************/
+class OpenFireUserService
+{
+	/**
+	* Stores all the default values.
+	* @var	array $settings
+	*/
+	private $settings = array(
+	&#39;host&#39;	=&gt; &#39;localhost&#39;,
+	&#39;port&#39;	=&gt; &#39;9090&#39;,
+	&#39;plugin&#39;	=&gt; &#39;/plugins/userService/userservice&#39;,
+	&#39;secret&#39;	=&gt; &#39;SuperSecret&#39;,
+	&#39;useCurl&#39;	=&gt; true,
+	&#39;useSSL&#39;	=&gt; false,
+	&#39;subscriptions&#39;	=&gt; array(-1, 0, 1, 2)
+	);
+
+
+	/***************************************************************
+	* Forward the POST request and analyze the result
+	*
+	* @param	string[] $parameters Parameters
+	* @return	array|false Array with data or error, or False when something went fully wrong
+	****************************************************************/
+	private function doRequest($parameters = array())
+	{
+		$base = ($this-&gt;useSSL) ? &quot;https&quot; : &quot;http&quot;;
+		$url = $base . &quot;://&quot; . $this-&gt;host;
+		if($this-&gt;useCurl) {
+			$result = $this-&gt;doRequestCurl($url, $parameters);
+		} else {
+			$result = $this-&gt;doRequestFopen($url, $parameters);
+		}
+		if($result === false) {
+			return false;
+		} else {
+			return $this-&gt;analyzeResult($result);
+		}
+	}
+
+
+	/***************************************************************
+	* Analyze the result for errors, and reorder the result
+	*
+	* @param	string $result Result
+	* @return	array|false Array with data or error, or False when something went fully wrong
+	****************************************************************/
+	private function analyzeResult($result)
+	{
+		if(preg_match(&#39;#^&lt;error&gt;([A-Za-z0-9 ]+)&lt;/error&gt;#&#39;, $result, $matches)) {
+			return array(
+			&#39;result&#39;	=&gt; false,
+			&#39;message&#39;	=&gt; $matches[1]
+			);
+		} elseif(preg_match(&#39;#^&lt;result&gt;([A-Za-z0-9 ]+)&lt;/result&gt;#&#39;, $result, $matches)) {
+			return array(
+			&#39;result&#39;	=&gt; true,
+			&#39;message&#39;	=&gt; $matches[1]
+			);
+		} else {
+			return false;
+		}
+	}
+
+
+	/***************************************************************
+	* Sends the actual POST request to OpenFire&#39;s UserService using cURL
+	*
+	* @param	string $url URL
+	* @param	string[] $parameters Parameters
+	* @return	string|false Callback data from cURL request
+	****************************************************************/
+	private function doRequestCurl($url, $parameters)
+	{
+		try {
+			//原版作者是做了post请求，参考同期git内的该代码，UserService已经变成了Get，所以，这里代码进行了修改
+			//将post变为了get，原版代码的git在( https://github.com/Cyerus/Php-OpenFire-UserService )
+			//php中的curl发起get，如果带有参数，直接写进去url即可
+			$ch = curl_init();
+			$var = $url . &quot;:&quot; . $this-&gt;port . $this-&gt;plugin . &quot;?&quot; . http_build_query($parameters);
+			curl_setopt($ch, CURLOPT_URL, $var);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+			//设置跳过验证证书和验证证书内的主机
+			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+			curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+			$result = curl_exec ($ch);
+			curl_close ($ch);
+		} catch (Exception $ex) {
+			$result = false;
+		}
+		return $result;
+	}
+
+
+	/***************************************************************
+	* Sends the actual POST request to OpenFire&#39;s UserService using cURL
+	*
+	* @param	string $url URL
+	* @param	string[] $parameters Parameters
+	* @return	string|false Callback data from FOpen request
+	****************************************************************/
+	private function doRequestFopen($url, $parameters)
+	{
+		try {
+			$fopen = fopen($url . &quot;:&quot; . $this-&gt;port . $this-&gt;plugin . &quot;?&quot; . http_build_query($parameters), &#39;r&#39;);
+			$result = fread($fopen, 1024);
+			fclose($fopen);
+		} catch (Exception $ex) {
+			$result = false;
+		}
+		return $result;
+	}
+
+
+	/***************************************************************
+	* Creates a new OpenFire user
+	*
+	* @param	string $username Username
+	* @param	string $password Password
+	* @param	string|false $name Name (Optional)
+	* @param	string|false $email Email (Optional)
+	* @param	string[]|false $groups Groups (Optional)
+	* @return	array|false Array with data or error, or False when something went fully wrong
+	****************************************************************/
+	public function addUser($username, $password, $name = false, $email = false, $groups = false)
+	{
+		$parameters = array(
+		&#39;type&#39;	=&gt; &#39;add&#39;,
+		&#39;secret&#39;	=&gt; $this-&gt;secret,
+		&#39;username&#39;	=&gt; $username,
+		&#39;password&#39;	=&gt; $password
+		);
+		// Name add request
+		$this-&gt;addString($parameters, &#39;name&#39;, $name);
+		// Email add request
+		$this-&gt;addEmail($parameters, $email);
+		// Groups add request
+		$this-&gt;addGroups($parameters, $groups);
+		return $this-&gt;doRequest($parameters);
+	}
+
+
+	/***************************************************************
+	* Deletes an OpenFire user
+	*
+	* @param	string $username Username
+	* @return	array|false Array with data or error, or False when something went fully wrong
+	****************************************************************/
+	public function deleteUser($username)
+	{
+		return $this-&gt;doRequest(array(
+		&#39;type&#39;	=&gt; &#39;delete&#39;,
+		&#39;secret&#39;	=&gt; $this-&gt;secret,
+		&#39;username&#39;	=&gt; $username
+		));
+	}
+
+
+	/***************************************************************
+	* Disables an OpenFire user
+	*
+	* @param	string $username Username
+	* @return	array|false Array with data or error, or False when something went fully wrong
+	****************************************************************/
+	public function disableUser($username)
+	{
+		return $this-&gt;doRequest(array(
+		&#39;type&#39;	=&gt; &#39;disable&#39;,
+		&#39;secret&#39;	=&gt; $this-&gt;secret,
+		&#39;username&#39;	=&gt; $username
+		));
+	}
+
+
+	/***************************************************************
+	* Enables an OpenFire user
+	*
+	* @param	string $username Username
+	* @return	array|false Array with data or error, or False when something went fully wrong
+	****************************************************************/
+	public function enableUser($username)
+	{
+		return $this-&gt;doRequest(array(
+		&#39;type&#39;	=&gt; &#39;enable&#39;,
+		&#39;secret&#39;	=&gt; $this-&gt;secret,
+		&#39;username&#39;	=&gt; $username
+		));
+	}
+
+
+	/***************************************************************
+	* Updates an OpenFire user
+	*
+	* @param	string $username Username
+	* @param	string|false $password Password (Optional)
+	* @param	string|false $name Name (Optional)
+	* @param	string|false $email Email (Optional)
+	* @param	string[]|false $groups Groups (Optional)
+	* @return	array|false Array with data or error, or False when something went fully wrong
+	****************************************************************/
+	public function updateUser($username, $password = false, $name = false, $email = false, $groups = false)
+	{
+		$parameters = array(
+		&#39;type&#39;	=&gt; &#39;update&#39;,
+		&#39;secret&#39;	=&gt; $this-&gt;secret,
+		&#39;username&#39;	=&gt; $username
+		);
+		// Password change request
+		$this-&gt;addString($parameters, &#39;password&#39;, $password);
+		// Name change request
+		$this-&gt;addString($parameters, &#39;name&#39;, $name);
+		// Email change request
+		$this-&gt;addEmail($parameters, $email);
+		// Groups change request
+		$this-&gt;addGroups($parameters, $groups);
+		return $this-&gt;doRequest($parameters);
+	}
+
+
+	/***************************************************************
+	* Adds to this OpenFire user&#39;s roster
+	*
+	* @param	string $username Username
+	* @param	string $itemJid Item JID
+	* @param	string|false $name Name (Optional)
+	* @param	int|false $subscription Subscription (Optional)
+	* @return	array|false Array with data or error, or False when something went fully wrong
+	****************************************************************/
+	public function addToRoster($username, $itemJid, $name = false, $subscription = false)
+	{
+		$parameters = array(
+		&#39;type&#39;	=&gt; &#39;add_roster&#39;,
+		&#39;secret&#39;	=&gt; $this-&gt;secret,
+		&#39;username&#39;	=&gt; $username,
+		&#39;item_jid&#39;	=&gt; $itemJid
+		);
+		// Name update request
+		$this-&gt;addString($parameters, &#39;name&#39;, $name);
+		// Subscription update request
+		$this-&gt;addSubscription($parameters, $subscription);
+		return $this-&gt;doRequest($parameters);
+	}
+
+
+	/***************************************************************
+	* Updates this OpenFire user&#39;s roster
+	*
+	* @param	string $username Username
+	* @param	string $itemJid Item JID
+	* @param	string|false $name Name (Optional)
+	* @param	int|false $subscription Subscription (Optional)
+	* @return	array|false Array with data or error, or False when something went fully wrong
+	****************************************************************/
+	public function updateRoster($username, $itemJid, $name = false, $subscription = false)
+	{
+		$parameters = array(
+		&#39;type&#39;	=&gt; &#39;update_roster&#39;,
+		&#39;secret&#39;	=&gt; $this-&gt;secret,
+		&#39;username&#39;	=&gt; $username,
+		&#39;item_jid&#39;	=&gt; $itemJid
+		);
+		// Name update request
+		$this-&gt;addString($parameters, &#39;name&#39;, $name);
+		// Subscription update request
+		$this-&gt;addSubscription($parameters, $subscription);
+		return $this-&gt;doRequest($parameters);
+	}
+
+
+	/***************************************************************
+	* Removes from this OpenFire user&#39;s roster
+	*
+	* @param	string $username Username
+	* @param	string $itemJid Item JID
+	* @return	array|false Array with data or error, or False when something went fully wrong
+	****************************************************************/
+	public function deleteFromRoster($username, $itemJid)
+	{
+		return $this-&gt;doRequest(array(
+		&#39;type&#39;	=&gt; &#39;delete_roster&#39;,
+		&#39;secret&#39;	=&gt; $this-&gt;secret,
+		&#39;username&#39;	=&gt; $username,
+		&#39;item_jid&#39;	=&gt; $itemJid
+		));
+	}
+
+
+	/***************************************************************
+	* Add a possible parameter
+	*
+	* @param	string[] $parameters Parameters
+	* @param	string $paramName Parameter name
+	* @param	string|int|bool|string[] $paramValue Parameter value
+	* @return	void
+	****************************************************************/
+	private function addParameter(&amp;$parameters, $paramName, $paramValue)
+	{
+		$parameters = array_merge($parameters, array(
+		$paramName =&gt; $paramValue
+		));
+	}
+
+
+	/***************************************************************
+	* Add a possible string parameter
+	*
+	* @param	string[] $parameters Parameters
+	* @param	string $paramName Parameter name
+	* @param	string|false $paramValue Parameter value
+	* @return	void
+	****************************************************************/
+	private function addString(&amp;$parameters, $paramName, $paramValue)
+	{
+		if(!empty($paramValue) &amp;&amp; is_string($paramValue)) {
+			$this-&gt;addParameter($parameters, $paramName, $paramValue);
+		}
+	}
+
+
+	/***************************************************************
+	* Add a possible email parameter
+	*
+	* @param	string[] $parameters Parameters
+	* @param	string|false $paramValue Parameter value
+	* @return	void
+	****************************************************************/
+	private function addEmail(&amp;$parameters, $paramValue)
+	{
+		if(filter_var($paramValue, FILTER_VALIDATE_EMAIL) !== false) {
+			$this-&gt;addParameter($parameters, &#39;email&#39;, $paramValue);
+		}
+	}
+
+
+	/***************************************************************
+	* Add a possible subscription parameter
+	*
+	* @param	string[] $parameters Parameters
+	* @param	int|false $paramValue Parameter value
+	* @return	void
+	****************************************************************/
+	private function addSubscription(&amp;$parameters, $paramValue)
+	{
+		if($paramValue !== false &amp;&amp; in_array($paramValue, $this-&gt;subscriptions)) {
+			$this-&gt;addParameter($parameters, &#39;subscription&#39;, $paramValue);
+		}
+	}
+
+
+	/***************************************************************
+	* Add a possible groups parameter
+	*
+	* @param	string[] $parameters Parameters
+	* @param	string[]|false $paramValue Parameter value
+	* @return	void
+	****************************************************************/
+	private function addGroups(&amp;$parameters, $paramValue)
+	{
+		if(is_array($paramValue) &amp;&amp; !empty($paramValue)) {
+			$this-&gt;addParameter($parameters, &#39;groups&#39;, implode(&#39;,&#39;, $paramValue));
+		}
+	}
+
+
+	/***************************************************************
+	* Simple construct (unused)
+	****************************************************************/
+	public function __construct() { }
+
+
+	/***************************************************************
+	* Stores a configuration parameter
+	*
+	* @param	string $name Name
+	* @return	string|bool|int|null Get parameter
+	****************************************************************/
+	public function __get($name)
+	{
+		if (array_key_exists($name, $this-&gt;settings)) {
+			return $this-&gt;settings[$name];
+		}
+		return null;
+	}
+
+
+	/***************************************************************
+	* Grabs a configuration parameter
+	*
+	* @param	string $name Name
+	* @param	string|bool|int $value Value
+	* @return	void
+	****************************************************************/
+	public function __set($name, $value)
+	{
+		$this-&gt;settings[$name] = $value;
+	}
+}
+
+
+
+
+
+</pre></div>
+</div>
+</li>
+<li><p class="first">HTTP客户端的CURL代码实现，该实现，功能做到了访问中间层的PHP脚本，来间接调用userservice插件</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>&lt;?php
+
+require_once (&#39;lib/OpenFireUserService.php&#39;);
+
+/***************************************************************
+ * Function: 
+ * Parameters:
+ * Return:
+ * Description:
+ ****************************************************************/
+function test_reg()
+{
+	//Create the OpenFireUserService object.
+	$pofus = new OpenFireUserService();
+
+	//Set the required config parameters
+	$pofus-&gt;secret = &quot;N9LLX0ks&quot;;
+	$pofus-&gt;host = &quot;192.168.199.103&quot;;
+	//default 9090 http端口，https的是9091
+	$pofus-&gt;port = &quot;9091&quot;;
+
+	//Optional parameters (showing default values)
+	$pofus-&gt;useCurl = true;
+	$pofus-&gt;useSSL = true;
+	//plugin folder location，类的根名就是userService，不要和目录混淆, 最好可以看看每一个插件的类根名称
+	$pofus-&gt;plugin = &quot;/plugins/userService/userservice&quot;;
+
+	//Add a new user to OpenFire
+	$result = $pofus-&gt;addUser(&#39;liuzhuantest&#39;, &#39;123456&#39;, &#39;刘钻&#39;, &#39;email@email.tld.cn&#39;);
+
+	//Check result if command is succesful
+	if($result) 
+	{
+		//Display result, and check if it&#39;s an error or correct response
+		echo ($result[&#39;result&#39;]) ? &#39;Success: &#39; : &#39;Error: &#39;;
+		echo $result[&#39;message&#39;];
+	}
+}
+
+
+/***************************************************************
+ * Function: main
+ * Parameters:
+ * Return:
+ * Description:
+ ****************************************************************/
+{
+	test_reg();
+}
+
+?&gt;
+
+
+</pre></div>
+</div>
+</li>
+<li><p class="first">另外提供一个服务器端PHP脚本的问题，这个是在测试时候发现的，已经修改了，不过可以作为一个常用方法来参考，明眼人一看就明白怎么回事:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>userservice该插件，不再接受add用户时候的post请求，全部更改为get，参考他的代码如下（package org.jivesoftware.openfire.plugin.userService）：
+@Override protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
+{
+  doGet(request, response);
+}
+doPost没了，直接用的doGet，所以，在php中的curl进行post表单时候，遇到了问题，后经过抓包发现只能get，抓包内容如下：
+0040  b3 a2 47 45 54 20 2f 70  6c 75 67 69 6e 73 2f 75   ..GET /p lugins/u
+0050  73 65 72 53 65 72 76 69  63 65 2f 75 73 65 72 73   serServi ce/users
+0060  65 72 76 69 63 65 3f 74  79 70 65 3d 61 64 64 26   ervice?t ype=add&amp;
+0070  73 65 63 72 65 74 3d 39  4d 35 35 4a 47 77 4e 26   secret=9 M55JGwN&amp;
+0080  75 73 65 72 6e 61 6d 65  3d 6c 69 75 7a 68 75 61   username =liuzhua
+0090  6e 74 65 73 74 26 70 61  73 73 77 6f 72 64 3d 31   ntest&amp;pa ssword=1
+00a0  32 33 34 35 36 26 6e 61  6d 65 3d 25 45 35 25 38   23456&amp;na me=%E5%8
+00b0  38 25 39 38 25 45 39 25  39 32 25 42 42 26 65 6d   8%98%E9% 92%BB&amp;em
+00c0  61 69 6c 3d 65 6d 61 69  6c 25 34 30 65 6d 61 69   ail=emai l%40emai
+00d0  6c 2e 74 6c 64 2e 63 6e  20 48 54 54 50 2f 31 2e   l.tld.cn  HTTP/1.
+00e0  31 0d 0a 48 6f 73 74 3a  20 31 39 32 2e 31 36 38   1..Host:  192.168
+00f0  2e 31 39 39 2e 32 32 35  3a 39 30 39 30 0d 0a 55   .199.225 :9090..U
+0100  73 65 72 2d 41 67 65 6e  74 3a 20 4d 6f 7a 69 6c   ser-Agen t: Mozil
+0110  6c 61 2f 35 2e 30 20 28  58 31 31 3b 20 55 62 75   la/5.0 ( X11; Ubu
+0120  6e 74 75 3b 20 4c 69 6e  75 78 20 69 36 38 36 3b   ntu; Lin ux i686;
+0130  20 72 76 3a 33 33 2e 30  29 20 47 65 63 6b 6f 2f    rv:33.0 ) Gecko/
+0140  32 30 31 30 30 31 30 31  20 46 69 72 65 66 6f 78   20100101  Firefox
+0150  2f 33 33 2e 30 0d 0a 41  63 63 65 70 74 3a 20 74   /33.0..A ccept: t
+0160  65 78 74 2f 68 74 6d 6c  2c 61 70 70 6c 69 63 61   ext/html ,applica
+0170  74 69 6f 6e 2f 78 68 74  6d 6c 2b 78 6d 6c 2c 61   tion/xht ml+xml,a
+0180  70 70 6c 69 63 61 74 69  6f 6e 2f 78 6d 6c 3b 71   pplicati on/xml;q
+
+php中进行的curl全部调试为get请求，结果就正确了！
+
+设置url时候，如果在浏览器中，直接输入数据进行调用，也就是uservice?方法，需要把数据进行urlencode，在php中，设置get参数
+可以直接使用http_build_query函数，来避免编码问题，否则，未经过编码的数据，直接调用接口，也会出错
+</pre></div>
+</div>
+</li>
+</ul>
+</div></blockquote>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="openfire.html">看到这里，先打断一下，客户端已经具备了，我们开始配置一个XMPP服务器端，OpenFire</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2016, LiuZhuan.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+    </div>
+  </body>
+</html>

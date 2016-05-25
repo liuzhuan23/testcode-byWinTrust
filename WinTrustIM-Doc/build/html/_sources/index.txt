@@ -1,0 +1,31 @@
+.. WinTrustIM-Doc documentation master file, created by
+   sphinx-quickstart on Tue Apr 26 15:42:25 2016.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
+
+Welcome to WinTrustIM-Doc's documentation!
+==========================================
+
+Contents:
+WinTrustIM-Doc 这篇文档，描述了关于如下的内容：
+
+1：WinTrustIM软件，所需的构成，以及他要达到什么目的
+
+2：WinTrustIM软件，主要的应用协议，以及应用协议的开发调试环境说明
+
+3：WinTrustIM软件，应用到了很多技术，这些方面，需要做一个记录和声明
+
+4：大量的IM开发例子，包含代码样例
+
+.. toctree::
+
+   ruanjianmiaoshu.txt
+   
+   kaifahuanjin.txt
+   
+   openfire.txt
+
+   openfire_plugin.txt
+
+   gloox.txt
+  

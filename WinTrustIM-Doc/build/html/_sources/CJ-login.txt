@@ -1,0 +1,3 @@
+Gloox实现场景-登录进去openfire
+--------------------------------
+  .. literalinclude:: ./CJ-login.cpp

@@ -1,0 +1,129 @@
+XMPP客户端关于Gloox的使用
+===================================================================================
+
+不再说别的了，直接开始说Gloox怎么用
+-------------------------------------
+
+   我会按照一个一个的例子来说使用方法，例子就是一个个的应用场景，比如，聊天，群组，发送文件等应用场景
+   
+   - Gloox的类描述::
+   
+      client类                实现IO
+      connectionlistener类    实现tcp监听
+      stanza类                实现XMPP响应体描述
+      registration类          实现注册用户
+      message类               实现消息流转
+      rostermanager类         实现花名册
+      presence类              实现联系人状态
+      mucroom类               实现会议室
+      vcard类                 实现用户注册信息修改
+
+      所有的类，里面都包含了virtual接口，如果使用了继承，就必须去实现虚接口，实现后，
+      gloox在你的实现基础之上，还会再次调用他自己的下层实现（virtual）所以，你只需要负责数据业务逻辑就可以了
+      
+   - 下述为我使用gloox编写代码部署（服务器外网，客户端内网）后，测试过的功能::
+   
+      gloox自动支持xmpp ping（XMPP协议：XEP-0199段定义），xmpp动作为：IQ->Get与IQ->To，此功能用于保持客户端心跳存活
+         1:ping消息可以选择来自服务器的ping
+         2:客户端也可以主动发送Ping
+         3:gloox允许使用XEP-0199，也就是来自服务器的xml ping，同时自己回复xmp ping保持存活
+         4:xmpp 核心协议，RFC6120中定义了whitespace pings，用于保持tcp的ping存活，这个gloox也是支持的，但是从协议上来看，不如XEP-0199直观
+     
+      gloox设置客户端状态，需要使用xmpp的Presence设置出席状态，实际就是上线，离线，下线，忙碌，还可以表示自己的本机操作动作，比如，在听什么歌
+      
+      gloox支持客户端定义个性签名（其他个性信息在数据结构中可以自己添加）
+      
+      gloox支持xmpp注册用户，注册时，支持XMPP的扩展协议，该扩展协议用来表示如下事件 （用户已经存在导致无法注册，用户无法通过格式审核导致注册错误事件通知）
+      
+      gloox支持xmpp已注册的用户修改自己的密码等注册信息（密码，昵称，头像，地址，Logo，mail，电话）
+      
+      gloox支持tls/ssl协商，支持自签署的证书，支持如下SASL认证机制方式（DIGEST-MD5，PLAIN，CRAM-MD5，ANONYMOUS）
+      
+      gloox内网部署代码作为客户端，与外网的服务器，和另外一个内网下的客户端进行通讯，NAT可以穿透，双方可以交互信息
+      
+      gloox支持添加联系人，联系人如果未确认同意，拒绝消息可以回送给请求一方，如果表示同意，则会有同意消息收到并确认到本地联系人花名册.
+      
+      gloox支持删除联系人，删除的消息通知可以发送到被删除一方（删除消息也可以不告诉用户，本地收到后不做处理，类似微信）
+      
+      gloox支持自定义组，好友分组，但仅限于本地，添加联系人的同时，此联系人即可同步到一个组中，该组内的联系人数据可以提供迭代器进行遍历
+      
+      gloox测试XMPP三种主要消息（Presence，Message，IQ，这三种消息基本描述了XMPP的80%内容），经过测试，都是支持并提供接口进行处理
+      
+      gloox作为联系人，被添加后，自动同步到xmpp服务器，每一步的操作（添加，删除）都会同步服务器端的数据节点
+      
+      gloox支持XMPP的HeadLine，也就是类似公告板的消息（新闻，RSS推送），不可回复
+         1:点对点的headline消息，属于广播消息，必须设置点对点
+         2:群组内的headline消息，属于广播消息，但是必须点对点进行发送，不可直接针对聊天室的id进行发送
+         3:利用这个Headline，可以设置为UI公告板
+         4:gloox支持Presence的状态推送，比如，如一个联系人发生状态改变，则该Pre值会被推送给所有联系人（该Pre值代表含义需要自己定义），收到后，即可获知联系人在线与否
+      
+      设置自己的出席状态Presence，通过IO的实现（Client）也可以直接发送，通过gloox的SetPresence是gloox的推荐做法
+      
+      gloox发送图片方法（1）：把图片经过BASE64进行Encode，再把编码后的字符放入stream中进行发送，也是可以达到图片传送的效果的，经过测试该方法是可行的，唯一缺点：B64编码会增加传输字节
+      
+      gloox发送语音方法（1）：这个语音不是指的VOIP语音，而是类似微信的那种语音二进制消息，我也是把语音文件进行了BASE64编码，然后放入stream中传递，经过测试该方法是可行的，唯一缺点：B64编码会增加传输字节
+      
+      gloox实现群组聊天：
+         1:群组聊天可以设置自己的群组内状态
+         2:设置自己在群组内的昵称
+         3:可以实现会议室内的用户群聊（发送与接收信息），通过测试是可以实现的，但是包含以下问题
+         4:一个用户发起会议室（我们理解为建立群聊），该聊天室在用户退出后，被服务器取消，不能持久化，需要为每个用户建立一定数量的固定聊天群组在服务器端（这个是可以实现的）
+         5:当我们建立用户聊天室持久化后，用户每次退出后，也就是自动退出了聊天室，需要在用户每次登陆时候，发现自己有哪些会议室，并主动加入（xmpp未实现会议室数据同步功能，这点通过改写服务器插件也是可以实现的）
+         6:同步的方式，需要在本地存储会议室数据，该数据的获取，来自服务器端改写的插件
+         7:群组邀请，gloox存在一处bug，在0.14版本（这是最新的版本了），这个bug导致无法收到群组邀请，现在通过gdb已经找出来了，改掉了
+         
+      gloox实现XEP-069传输文件：
+         1:无法实现非好友的对传文件，双方必须是联系人才可以
+         2:聊天室内无法实现对传文件，聊天室也是一个JabberID，这个ID, 无法收文件传送的消息
+         3:建议使用http实现，服务器端实现表单和php上传文件，客户端采用curl库，写上传和下载，上传的文件url可以采用uuid命名方式，避免重复
+      
+      http文件方式实现概述
+         1:服务器端运行http服务，并提供html表单和php cig，该表单和cgi结合起来，缓存文件
+         2:客户端实现curl库API的调用，文件使用本地uuid方式命名，上传服务器
+         3:服务器返回文件缓存url，客户收到消息，将该文件url作为XMPP Message消息发送出去
+         4:我这里已经实现了该功能
+         
+      gloox实现会议室持久话
+         1:参考XEP-045
+         2:下列为XEP-045中定义的会议室Flag，需要使用gloox的setRoomConfig进行DataFrom的TypeSubmit类型调用（实际是组了一个XML出去）
+         "muc#roomconfig_roomname"
+         "muc#roomconfig_roomdesc"
+         "muc#roomconfig_enablelogging"
+         "muc#roomconfig_changesubject"
+         "muc#roomconfig_publicroom"
+         "muc#roomconfig_persistentroom"
+         "muc#roomconfig_moderatedroom"
+         "muc#roomconfig_membersonly"
+         "muc#roomconfig_passwordprotectedroom"
+         "muc#roomconfig_roomsecret"
+   
+Gloox实现场景的MakeFile
+--------------------------------
+  .. literalinclude:: ./testgloox_makefile
+  
+Gloox实现场景-登录进去openfire
+--------------------------------
+  .. literalinclude:: ./CJ-login.cpp
+  
+Gloox实现场景-XMPP加好友
+--------------------------------
+  .. literalinclude:: ./CJ-contact.cpp
+  
+Gloox实现场景-XMPP对话
+--------------------------------
+  .. literalinclude:: ./CJ-chat.cpp
+
+Gloox实现场景-文件传输
+--------------------------------
+  .. literalinclude:: ./CJ-file.cpp
+  
+Gloox实现场景-语音传输
+--------------------------------
+  .. literalinclude:: ./CJ-voice.cpp
+  
+Gloox实现场景-群组聊天
+--------------------------------
+  .. literalinclude:: ./CJ-gtoup.cpp
+
+
+

@@ -1,0 +1,139 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Gloox实现场景-登录进去openfire &mdash; WinTrustIM-Doc 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="WinTrustIM-Doc 0.1 documentation" href="index.html" />
+    <link rel="prev" title="XMPP客户端关于Gloox的使用" href="gloox.html" /> 
+  </head>
+  <body role="document">
+      <div class="header" role="banner"><h1 class="heading"><a href="index.html">
+          <span>WinTrustIM-Doc 0.1 documentation</span></a></h1>
+        <h2 class="heading"><span>Gloox实现场景-登录进去openfire</span></h2>
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="gloox.html">XMPP客户端关于Gloox的使用</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="gloox-openfire">
+<h1>Gloox实现场景-登录进去openfire<a class="headerlink" href="#gloox-openfire" title="Permalink to this headline">¶</a></h1>
+<blockquote>
+<div><div class="highlight-default"><div class="highlight"><pre><span></span>#include &quot;gloox/gloox.h&quot;
+#include &quot;gloox/client.h&quot;
+#include &quot;gloox/connectionlistener.h&quot;
+#include &quot;gloox/connectiontls.h&quot;
+#include &quot;gloox/connectiontlsserver.h&quot;
+#include &quot;gloox/connectiontcpclient.h&quot;
+#include &quot;gloox/disco.h&quot;
+#include &quot;gloox/discohandler.h&quot;
+#include &quot;gloox/stanza.h&quot;
+#include &quot;gloox/lastactivity.h&quot;
+#include &quot;gloox/registration.h&quot;
+#include &quot;gloox/logsink.h&quot;
+#include &quot;gloox/loghandler.h&quot;
+
+//这部分头文件是关于聊天和注册的
+#include &quot;gloox/message.h&quot;
+#include &quot;gloox/messagehandler.h&quot;
+#include &quot;gloox/messagesessionhandler.h&quot;
+#include &quot;gloox/messageeventhandler.h&quot;
+#include &quot;gloox/messageeventfilter.h&quot;
+#include &quot;gloox/chatstatehandler.h&quot;
+#include &quot;gloox/chatstatefilter.h&quot;
+#include &quot;gloox/connectiontcpclient.h&quot;
+#include &quot;gloox/connectionsocks5proxy.h&quot;
+#include &quot;gloox/connectionhttpproxy.h&quot;
+
+//这部分头文件是关于花名册和设置状态，签名（上线，下线，离开等）
+#include &quot;gloox/rostermanager.h&quot;
+#include &quot;gloox/presence.h&quot;
+
+//这部分头文件是关于会议室的（群组）
+#include &quot;gloox/mucroom.h&quot;
+#include &quot;gloox/mucroomhandler.h&quot;
+#include &quot;gloox/mucinvitationhandler.h&quot;
+
+//这部分头文件是关于修改自己注册信息的
+#include &quot;gloox/vcardhandler.h&quot;
+#include &quot;gloox/vcardmanager.h&quot;
+#include &quot;gloox/vcard.h&quot;
+
+//这部分头文件是关于实现XEP-069扩展
+#include &quot;gloox/siprofileft.h&quot;
+#include &quot;gloox/siprofilefthandler.h&quot;
+#include &quot;gloox/bytestreamdatahandler.h&quot;
+#include &quot;gloox/socks5bytestreamserver.h&quot;
+
+#include &quot;gloox/dataform.h&quot;
+
+#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+#include &lt;locale.h&gt;
+#include &lt;cstdio&gt;
+#include &lt;iostream&gt;
+#include &lt;fstream&gt;
+
+//没用其他的数据结构，这里只用了两个命名空间，std和gloox
+using namespace std;
+using namespace gloox;
+
+int main( int argc, char* argv[] )
+{
+    MessageTest * r = new MessageTest();
+    r-&gt;start();
+    delete( r );
+
+    return 0;
+}
+
+</pre></div>
+</div>
+</div></blockquote>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="gloox.html">XMPP客户端关于Gloox的使用</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2016, LiuZhuan.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+    </div>
+  </body>
+</html>

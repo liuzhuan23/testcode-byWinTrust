@@ -1,0 +1,59 @@
+WinTrustIM软件XMPP协议栈开发环境调试
+=======================================
+
+XMPP 的开发库选择（Gloox）
+--------------------------------
+ 
+   gloox为支持XMPP协议以及其XEP扩展的一个C++库，代码为纯C++编写，依赖库为libidn，xmlpat2-dev，gnutls（可以不去编译支持他），openssl，zlib，pthread
+
+   这个库一直在维护中，算是C/C++的XMPP中维护较好的一个了，其他库也有，但不是更新很慢，支持XEP少，就是缺少说明，或者是代码质量一般，还有一些比较出色的XMPP库，但是是java编写的，不存在C/C++版本
+   
+Gloox 安装的必要条件
+--------------------------------
+   
+   安装步骤::
+   
+      tar xvzf gloox-1.0.14-m1.tar.gz （这是一个我修改后的版本，原版本中存在BUG，具体请参看其中的Change-liuzhuan.txt）
+   
+      ./configure --with-gnutls=no （放弃gnutls，选择默认使用openssl）
+   
+      make
+   
+      sudo make install
+   
+Gloox 安装后，进行一下代码环境测试
+------------------------------------------------
+ 
+   在make install后，我们写一个测试代码进行编译测试，测试过程也很简单，调用一次头文件和依赖库即可
+   
+   - 建立一个测试目录::
+   
+        mkdir testgloox
+   
+   - 进去这个目录开始编写代码::
+   
+        cd testgloox
+   
+   - 建立Makefile，请注意调整你的CFLAG和LDFLAGS，他们可以帮助你链接到正确的gloox安装路径，以及GCC的设置
+   
+     .. literalinclude:: ./testgloox_makefile
+   
+   - 建立C文件，很简单，一个编译链接的测试
+   
+     .. literalinclude:: ./testgloox.cpp
+     
+   - 编译::
+   
+        make，就可以看到输出目标，testgl
+        
+        如果你的编译出错了，发生链接的ld错误，请这样配置你的环境
+        
+        vi /etc/ld.so.conf
+        
+        输入 /usr/local/lib
+        
+        执行 sudo ldconfig，重新配置ld环境
+   
+   
+   
+   
