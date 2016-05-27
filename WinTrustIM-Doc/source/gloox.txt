@@ -123,7 +123,7 @@ Gloox实现场景-语音传输
   
 Gloox实现场景-群组聊天
 --------------------------------
-  .. literalinclude:: ./CJ-gtoup.cpp
+  .. literalinclude:: ./CJ-group.cpp
 
 
 
