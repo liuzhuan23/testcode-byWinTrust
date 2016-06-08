@@ -488,9 +488,9 @@ class MessageTest : RosterListener, MessageSessionHandler, ConnectionListener, M
             //（2）IO，也就是client，收到消息，发现自己注册了会议室邀请事件，于是通知注册的类
             //（3）注册的MUC类，收到通知，操作，根据自己的业务逻辑，用IO（client）送出去消息
             //（4）这个类实现了会议邀请，会议创建
-            mt = new MucTest( j );
-            j->registerMUCInvitationHandler( mt );
-            mt->start();
+            //mt = new MucTest( j );
+            //j->registerMUCInvitationHandler( mt );
+            //mt->start();
         }
 
         virtual void onDisconnect( ConnectionError e )
