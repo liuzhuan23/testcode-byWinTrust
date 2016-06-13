@@ -65,7 +65,7 @@ class MessageTest : MessageSessionHandler, ConnectionListener, MessageEventHandl
 
         void start()
         {
-            JID jid( "test456@192.168.199.103/test456" );
+            JID jid( "ca23@192.168.199.225/ca23" );
             j = new Client( jid, "123456" );
             j->registerConnectionListener( this ); //注册client的recv
             j->registerMessageSessionHandler( this, 0 ); //注册会话等类
@@ -112,6 +112,18 @@ class MessageTest : MessageSessionHandler, ConnectionListener, MessageEventHandl
             m_messageEventFilter->raiseMessageEvent( MessageEventDisplayed );
             m_messageEventFilter->raiseMessageEvent( MessageEventComposing );
             m_chatStateFilter->setChatState( ChatStateComposing );
+            
+            if( msg.subtype() == Message::Chat )
+            {
+            	if( msg.body().length() == 0 )
+                {
+                	return;
+                }
+                else
+                {
+                    printf( "type: %d, subject: %s, message: %s, thread id: %s, from: %s\n", msg.subtype(), msg.subject().c_str(), msg.body().c_str(), msg.thread().c_str(), msg.from().full().c_str() );
+                }
+             }
         }
 
         virtual void handleMessageEvent( const JID& from, MessageEventType event )
@@ -146,6 +158,88 @@ class MessageTest : MessageSessionHandler, ConnectionListener, MessageEventHandl
         virtual void handleLog( LogLevel level, LogArea area, const std::string& message )
         {
             printf("#-----------#  log: level: %d, area: %d, %s\n", level, area, message.c_str() );
+        }
+
+		 virtual void onResourceBindError( ResourceBindError error )
+        {
+            printf( "onResourceBindError: %d\n", error );
+        }
+
+        virtual void onSessionCreateError( SessionCreateError error )
+        {
+            printf( "onSessionCreateError: %d\n", error );
+        }
+
+        virtual void handleItemSubscribed( const JID& jid ) //本地添加好友添加完成最后一步（添加联系人-4）
+        {
+            printf( "subscribed %s\n", jid.bare().c_str() );
+        }
+
+        virtual void handleItemAdded( const JID& jid ) //add事件发生（添加联系人-2）
+        {
+            printf( "added %s\n", jid.bare().c_str() );
+        }
+
+        virtual void handleItemUnsubscribed( const JID& jid ) //收到解除好友关系（解除联系人-1）
+        {
+            printf( "unsubscribed %s\n", jid.bare().c_str() );
+        }
+
+        virtual void handleItemRemoved( const JID& jid ) //移除好友关系（解除联系人-3）
+        {
+            printf( "removed %s\n", jid.bare().c_str() );
+        }
+
+        virtual void handleItemUpdated( const JID& jid ) //发生了更新本地好友列表（添加联系人-3）, （解除联系人-2）
+        {
+            printf( "updated %s\n", jid.bare().c_str() );
+        }
+
+        virtual void handleRoster( const Roster& roster ) //激活本地花名册
+        {
+            printf( "roster arriving\n" );
+        }
+
+        virtual void handleRosterError( const IQ& /*iq*/ )
+        {
+            printf( "a roster-related error occured\n" );
+        }
+        
+        virtual bool handleUnsubscriptionRequest( const JID& jid, const std::string& /*msg*/ )
+        {
+            printf( "unsubscription: %s\n", jid.bare().c_str() );
+            return true;
+        }
+
+        virtual void handleNonrosterPresence( const Presence& presence )
+        {
+            printf( "received presence from entity not in the roster: %s\n", presence.from().full().c_str() );
+        }
+
+        ////出席事件状态通知，从这里可以得到联系人的状态改变，从而标记联系人变化
+        virtual void handleRosterPresence( const RosterItem& item, const std::string& resource, Presence::PresenceType presence, const std::string& /*msg*/ )
+        {
+            printf( "presence received: %s/%s -- %d\n", item.jidJID().full().c_str(), resource.c_str(), presence );
+        }
+
+        virtual void handleSelfPresence( const RosterItem& item, const std::string& resource, Presence::PresenceType presence, const std::string& /*msg*/ )
+        {
+            printf( "self presence received: %s/%s -- %d\n", item.jidJID().full().c_str(), resource.c_str(), presence );
+        }
+
+        virtual bool handleSubscriptionRequest( const JID& jid, const std::string& /*msg*/ ) //发生收到好友请求（添加联系人-1）
+        {
+            //ack {false, true} {拒绝联系人请求，同意联系人请求}
+            bool ack = true;
+                        
+            printf( "subscription: %s\n", jid.bare().c_str() );
+            StringList groups;
+            groups.push_back("Group-1");
+            JID id( jid );
+            //添加到了本地花名册
+            j->rosterManager()->subscribe( id, "", groups, "" );
+            
+            return ack;
         }
 
     private:
