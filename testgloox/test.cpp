@@ -207,12 +207,12 @@ class MucTest : public MUCRoomHandler, public MUCInvitationHandler
         
         void start()
         {
-            JID nick( "glooxMUCtest@conference.192.168.199.225/ca23" );
-            m_room = new MUCRoom( m_client, nick, this, 0 );
-            DataForm * df = new DataForm( TypeSubmit );
-            df->addField( DataFormField::TypeBoolean, "muc#roomconfig_persistentroom", "1", "Make Room Persistent" );
-            m_room->join();
-            m_room->setRoomConfig(df);
+            //JID nick( "glooxMUCtest@conference.192.168.199.225/ca23" );
+            //m_room = new MUCRoom( m_client, nick, this, 0 );
+            //DataForm * df = new DataForm( TypeSubmit );
+            //df->addField( DataFormField::TypeBoolean, "muc#roomconfig_persistentroom", "1", "Make Room Persistent" );
+            //m_room->join();
+            //m_room->setRoomConfig(df);
         }
   
         virtual void handleMUCParticipantPresence( MUCRoom * /*room*/, const MUCRoomParticipant participant, const Presence& presence )
@@ -281,7 +281,7 @@ class MucTest : public MUCRoomHandler, public MUCInvitationHandler
         //收到了会议室邀请
         virtual void handleMUCInvitation( const JID& room, const JID& from, const std::string& reason, const std::string& body, const std::string& password, bool cont, const std::string& thread )
         {
-            /*
+            
             m_muclist = room.full().c_str();
             printf( "orgi room invict id: %s\n", room.full().c_str() );
             std::string roomid = room.full().c_str();
@@ -292,7 +292,7 @@ class MucTest : public MUCRoomHandler, public MUCInvitationHandler
             m_room->join();
             m_room->getRoomInfo();
             m_room->getRoomItems();
-            */
+            
         }
         
     private:
@@ -450,7 +450,7 @@ class MessageTest : RosterListener, MessageSessionHandler, ConnectionListener, M
 
         void start()
         {
-            JID jid( "test123@192.168.199.103/test123" );
+            JID jid( "ca23@192.168.199.225/ca23" );
             j = new Client( jid, "123456" );
             j->registerConnectionListener( this ); //注册client的recv
             j->registerMessageSessionHandler( this, 0 ); //注册会话等类
@@ -488,9 +488,9 @@ class MessageTest : RosterListener, MessageSessionHandler, ConnectionListener, M
             //（2）IO，也就是client，收到消息，发现自己注册了会议室邀请事件，于是通知注册的类
             //（3）注册的MUC类，收到通知，操作，根据自己的业务逻辑，用IO（client）送出去消息
             //（4）这个类实现了会议邀请，会议创建
-            //mt = new MucTest( j );
-            //j->registerMUCInvitationHandler( mt );
-            //mt->start();
+            mt = new MucTest( j );
+            j->registerMUCInvitationHandler( mt );
+            mt->start();
         }
 
         virtual void onDisconnect( ConnectionError e )
