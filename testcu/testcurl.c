@@ -149,8 +149,42 @@ static int download_file()
 
     curl_easy_cleanup(curl_handle);
 }
- 
 
+
+/***************************************************************
+ * Function: curl下载操作
+ * Parameters:
+ * Return:
+ * Description:
+ ****************************************************************/
+static int TEST_REST_API()
+{
+	CURL * curl;
+	CURLcode res;
+ 
+	curl_global_init(CURL_GLOBAL_ALL);
+
+	curl = curl_easy_init();
+  	if(curl) 
+	{
+		//curl_easy_setopt(curl, CURLOPT_URL, "http://192.168.199.225:9090/plugins/restapi/userservice?type=add&secret=JsEBwzx48Yo83j5R&username=kafka&password=drowssap&name=franz&email=franz@kafka.com");
+
+		curl_easy_setopt(curl, CURLOPT_URL, "http://192.168.199.225:9090/plugins/userService/userservice?type=add&secret=9M55JGwN&username=kafka&password=drowssap&name=franz&email=franz@kafka.com");
+
+		res = curl_easy_perform(curl);
+
+	    if(res != CURLE_OK)
+		{
+      		fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+		}
+ 
+    	curl_easy_cleanup(curl);
+  	}
+
+	curl_global_cleanup();
+}
+
+ 
 /***************************************************************
 * Function: main函数，这里分别使用了上传，下载的curl进行测试
 * Parameters:
@@ -159,9 +193,11 @@ static int download_file()
 ****************************************************************/
 int main()
 {
-    upload_file();
+    //upload_file();
     
-    download_file();
+    //download_file();
+
+	TEST_REST_API();
     return 0;
 }
 
