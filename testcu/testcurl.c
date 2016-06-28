@@ -169,7 +169,7 @@ static int TEST_REST_API()
 	{
 		//curl_easy_setopt(curl, CURLOPT_URL, "http://192.168.199.225:9090/plugins/restapi/userservice?type=add&secret=JsEBwzx48Yo83j5R&username=kafka&password=drowssap&name=franz&email=franz@kafka.com");
 
-		curl_easy_setopt(curl, CURLOPT_URL, "http://192.168.199.225:9090/plugins/userService/userservice?type=add&secret=9M55JGwN&username=kafka&password=drowssap&name=franz&email=franz@kafka.com");
+		curl_easy_setopt(curl, CURLOPT_URL, "http://192.168.199.103:9090/plugins/userService/userservice?type=delete&secret=N9LLX0ks&username=kafka&password=drowssap&name=franz&email=franz@kafka.com");
 
 		res = curl_easy_perform(curl);
 
