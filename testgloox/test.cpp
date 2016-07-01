@@ -450,7 +450,7 @@ class MessageTest : RosterListener, MessageSessionHandler, ConnectionListener, M
 
         void start()
         {
-            JID jid( "ca23@192.168.199.225/ca23" );
+            JID jid( "test456@192.168.199.103/test456" );
             j = new Client( jid, "123456" );
             j->registerConnectionListener( this ); //注册client的recv
             j->registerMessageSessionHandler( this, 0 ); //注册会话等类
