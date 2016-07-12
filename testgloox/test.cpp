@@ -230,9 +230,7 @@ class MucTest : public MUCRoomHandler, public MUCInvitationHandler
         {
             printf( "room id %s, %s said: '%s' (history: %s, private: %s)\n", m_muclist.c_str(), msg.from().resource().c_str(), msg.body().c_str(), msg.when() ? "yes" : "no", priv ? "yes" : "no" );
             
-            //JID jid( "sp23@192.168.199.225" );
-            //Message M( Message::Headline, jid, "headline test", "headline subject" );
-            //m_client->send( M );
+            room->send( "hi 这里是test789在群里说的话!" );
         }
 
         virtual void handleMUCSubject( MUCRoom * /*room*/, const std::string& nick, const std::string& subject )
@@ -285,7 +283,7 @@ class MucTest : public MUCRoomHandler, public MUCInvitationHandler
             m_muclist = room.full().c_str();
             printf( "orgi room invict id: %s\n", room.full().c_str() );
             std::string roomid = room.full().c_str();
-            roomid.append("/ca23");
+            roomid.append("/test789");
             printf( "modify room invict id: %s\n", roomid.c_str() );
             JID nickmeet( roomid );
             m_room = new MUCRoom( m_client, nickmeet, this, 0 );
@@ -450,7 +448,7 @@ class MessageTest : RosterListener, MessageSessionHandler, ConnectionListener, M
 
         void start()
         {
-            JID jid( "test456@192.168.199.103/test456" );
+            JID jid( "test789@192.168.199.103/test789" );
             j = new Client( jid, "123456" );
             j->registerConnectionListener( this ); //注册client的recv
             j->registerMessageSessionHandler( this, 0 ); //注册会话等类
@@ -488,9 +486,9 @@ class MessageTest : RosterListener, MessageSessionHandler, ConnectionListener, M
             //（2）IO，也就是client，收到消息，发现自己注册了会议室邀请事件，于是通知注册的类
             //（3）注册的MUC类，收到通知，操作，根据自己的业务逻辑，用IO（client）送出去消息
             //（4）这个类实现了会议邀请，会议创建
-           // mt = new MucTest( j );
-            //j->registerMUCInvitationHandler( mt );
-            //mt->start();
+           mt = new MucTest( j );
+           j->registerMUCInvitationHandler( mt );
+           mt->start();
         }
 
         virtual void onDisconnect( ConnectionError e )
@@ -626,9 +624,9 @@ class MessageTest : RosterListener, MessageSessionHandler, ConnectionListener, M
                     {
                         printf( "type: %d, subject: %s, message: %s, thread id: %s, from: %s\n", msg.subtype(), msg.subject().c_str(), msg.body().c_str(), msg.thread().c_str(), msg.from().full().c_str() );
 
-	Message m( Message::Chat, JID( "test789@192.168.199.103/test789" ), "wo给你发的主动消息", "the subject", "the thread", "the xmllang" );
-	m.setFrom( JID( "test456@192.168.199.103/test456" ) );
-	j->send( m );
+	//Message m( Message::Chat, JID( "test456@192.168.199.103/test456" ), "wo给你发的主动消息", "the subject", "the thread", "the xmllang" );
+	//m.setFrom( JID( "test789@192.168.199.103/test789" ) );
+	//j->send( m );
                     }
                 }
             }
