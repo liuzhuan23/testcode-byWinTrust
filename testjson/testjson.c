@@ -496,7 +496,6 @@ int main(int argc, char *argv[])
     }
 	*/
 	
-	/*
 	////////////测试了普通的http，不带post，只收服务器回来的json数据，测试行为--多行数组的jansson库处理/////////////////////////////
 	{        
         text = request(url);
@@ -512,8 +511,8 @@ int main(int argc, char *argv[])
     	//jansson多行数组解析测试
 	    jansson_parse(text);
     }
-    */
     
+	/*
     ////////////测试了普通的http，不带post，只收服务器回来的json数据，测试行为--单行json的jansson库处理/////////////////////////////
     {        
         text = request(url);
@@ -529,6 +528,7 @@ int main(int argc, char *argv[])
     	//jansson单行数据解析测试
 	    non_jansson_parse(text);
     }
+	*/
          
     return 0;
 }
