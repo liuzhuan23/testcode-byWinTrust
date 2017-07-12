@@ -210,9 +210,6 @@ class MessageTest : RosterListener, MessageSessionHandler, ConnectionListener, M
             }
             else if ( msg.body() == "test-ft" )
             {
-                FTTest * r = new FTTest( j );
-                r->start();
-                delete(r);
             }
             else
             {
@@ -347,7 +344,6 @@ class MessageTest : RosterListener, MessageSessionHandler, ConnectionListener, M
         MessageSession * m_session;
         MessageEventFilter * m_messageEventFilter;
         ChatStateFilter * m_chatStateFilter;
-        MucTest * mt;
 };
 
 

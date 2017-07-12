@@ -448,8 +448,8 @@ class MessageTest : RosterListener, MessageSessionHandler, ConnectionListener, M
 
         void start()
         {
-            JID jid( "test456@192.168.199.103/test456" );
-            j = new Client( jid, "123456" );
+            JID jid( "104@eokid.com" );
+            j = new Client( jid, "222222" );
             j->registerConnectionListener( this ); //注册client的recv
             j->registerMessageSessionHandler( this, 0 ); //注册会话等类
             j->rosterManager()->registerRosterListener( this ); //注册花名册管理
@@ -697,7 +697,23 @@ class MessageTest : RosterListener, MessageSessionHandler, ConnectionListener, M
 
         virtual void handleRoster( const Roster& roster ) //激活本地花名册
         {
-            printf( "roster arriving\n" );
+			printf( "roster arriving\nitems:\n" );
+		   	Roster::const_iterator it = roster.begin();
+		   	for( ; it != roster.end(); ++it )
+      		{
+				printf( "jid: %s, name: %s, subscription: %d\n",
+                (*it).second->jidJID().full().c_str(), (*it).second->name().c_str(),
+                (*it).second->subscription() );
+		        StringList g = (*it).second->groups();
+        		StringList::const_iterator it_g = g.begin();
+
+		        for( ; it_g != g.end(); ++it_g )
+        		  printf( "\tgroup: %s\n", (*it_g).c_str() );
+
+		        RosterItem::ResourceMap::const_iterator rit = (*it).second->resources().begin();
+		        for( ; rit != (*it).second->resources().end(); ++rit )
+        		  printf( "resource: %s\n", (*rit).first.c_str() );
+	      }
         }
 
         virtual void handleRosterError( const IQ& /*iq*/ )
